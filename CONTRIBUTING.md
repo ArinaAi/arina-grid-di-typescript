@@ -64,3 +64,4 @@ parse. `tests/smoke-test.ts` is the generator's live reachability check; run it 
 ## Known follow-ups
 
 - Confirm the copyright holder in `LICENSE` is the legal entity name.
+
