@@ -1,0 +1,24 @@
+# Weekly update PRs, grouped: one for GitHub Actions, one for dev tooling.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+    groups:
+      github-actions:
+        patterns: ["*"]
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+    # The SDK has no runtime dependencies; only tooling is ours to bump.
+    allow:
+      - dependency-type: development
+    groups:
+      dev-tooling:
+        patterns: ["*"]

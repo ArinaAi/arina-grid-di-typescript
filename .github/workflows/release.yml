@@ -1,0 +1,141 @@
+# Release: version PR, tag, GitHub Release, npm publish. See RELEASING.md.
+#
+# push to main (feat/fix merged)   -> release job opens/updates PR "chore(release): vX.Y.Z"
+# push to main (release PR merged) -> release job tags + creates the GitHub Release, then build + publish
+# manual run                       -> build + publish a tag (or main), dry-run or for real
+#
+# Versioning and changelog: release-please (config in .github/release-config.json).
+# Publishing runs in this workflow because GitHub does not trigger workflows from events created with
+# GITHUB_TOKEN. Uploads use npm Trusted Publishing (OIDC, provenance attached, no tokens); npm identifies
+# the publisher by this workflow's filename, so keep publishing in release.yml.
+# Automatic publishes are a DRY RUN unless repository variable RELEASE_INDEX == "npm".
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Publish for real, or only show what would be published
+        type: choice
+        options: [dry-run, publish]
+        default: dry-run
+      ref:
+        description: Tag to build (empty = main, no tag check)
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      created: ${{ steps.release.outputs.release_created }}
+      tag: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v5
+        id: release
+        with:
+          config-file: .github/release-config.json
+          manifest-file: .github/release-manifest.json
+
+  build:
+    needs: release
+    # !cancelled(): run on manual dispatch even though `release` is skipped.
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.release.outputs.created == 'true') }}
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.plan.outputs.mode }}
+      version: ${{ steps.plan.outputs.version }}
+      name: ${{ steps.plan.outputs.name }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || needs.release.outputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install, build, pack
+        run: npm ci && npm run build && npm pack
+
+      - name: Plan publish (mode, version == tag)
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_MODE: ${{ inputs.mode }}
+          INPUT_REF: ${{ inputs.ref }}
+          RELEASE_TAG: ${{ needs.release.outputs.tag }}
+          RELEASE_INDEX: ${{ vars.RELEASE_INDEX }}
+        run: |
+          set -eu
+          version="$(node -p "require('./package.json').version")"
+          name="$(node -p "require('./package.json').name")"
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            mode="$INPUT_MODE"; tag="$INPUT_REF"
+          else
+            if [ "$RELEASE_INDEX" = "npm" ]; then mode="publish"; else mode="dry-run"; fi
+            tag="$RELEASE_TAG"
+          fi
+          if [ -n "$tag" ] && [ "${tag#v}" != "$version" ]; then
+            echo "::error::tag $tag does not match package version $version"; exit 1
+          fi
+          { echo "version=$version"; echo "mode=$mode"; echo "name=$name"; } >> "$GITHUB_OUTPUT"
+          echo "- version \`$version\` · tag \`${tag:-none}\` · mode **$mode**" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package
+          path: '*.tgz'
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    # !cancelled(): the skipped `release` job (manual runs) would otherwise skip this job too.
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/${{ needs.build.outputs.name }}/v/${{ needs.build.outputs.version }}
+    permissions:
+      id-token: write   # OIDC token for npm Trusted Publishing
+      contents: read
+    steps:
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: npm >= 11.5.1 (Trusted Publishing)
+        run: npm install -g npm@latest && npm --version
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: package
+
+      - name: Publish
+        env:
+          MODE: ${{ needs.build.outputs.mode }}
+        run: |
+          set -eu
+          tgz="$(ls ./*.tgz)"
+          if [ "$MODE" = "publish" ]; then
+            npm publish "$tgz" --access public --provenance
+          else
+            echo "dry run: nothing is uploaded"
+            npm publish "$tgz" --access public --dry-run
+          fi
