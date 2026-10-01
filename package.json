@@ -1,0 +1,79 @@
+{
+  "name": "@arina-ai/arina-grid-di",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the Arina Document Intelligence API: schema-driven extraction with spatial citations, layout parsing, and reusable extractors.",
+  "author": "Arina",
+  "license": "Apache-2.0",
+  "homepage": "https://arina.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArinaAi/arina-grid-di-typescript.git"
+  },
+  "bugs": "https://github.com/ArinaAi/arina-grid-di-typescript/issues",
+  "keywords": [
+    "arina",
+    "document-intelligence",
+    "ocr",
+    "extraction",
+    "sdk"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/esm/index.js"
+    },
+    "./lib": {
+      "types": "./dist/esm/lib/index.d.ts",
+      "import": "./dist/esm/lib/index.js",
+      "require": "./dist/cjs/lib/index.js",
+      "default": "./dist/esm/lib/index.js"
+    },
+    "./*.mjs": {
+      "types": "./dist/esm/*.d.ts",
+      "import": "./dist/esm/*.js",
+      "default": "./dist/esm/*.js"
+    },
+    "./*.js": {
+      "types": "./dist/esm/*.d.ts",
+      "import": "./dist/esm/*.js",
+      "require": "./dist/cjs/*.js",
+      "default": "./dist/esm/*.js"
+    },
+    "./*": {
+      "types": "./dist/esm/*.d.ts",
+      "import": "./dist/esm/*.js",
+      "require": "./dist/cjs/*.js",
+      "default": "./dist/esm/*.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "api.md",
+    "SKILL.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node scripts/finalize-build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.cjs.json --noEmit",
+    "lint": "biome check src/lib tests/*.test.ts",
+    "lint:fix": "biome check --write src/lib tests/*.test.ts",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@biomejs/biome": "^2.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
+  }
+}
