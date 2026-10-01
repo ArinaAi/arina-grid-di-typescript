@@ -29,7 +29,10 @@ Generated and hand-written code never share a file, so regeneration is a plain c
 4. Commit with the prefix that matches the API change (below), open a PR, merge when CI is green.
 
 The import restores the current version into `src/version.ts` (the zip always says `0.1.0`), rejects zips that
-are not this SDK, and replaces the generator's empty default base URL (emitted when no environment is
+are not this SDK, rewrites the package name in the generated docs to the one in `package.json` (the
+generator's own setting is cosmetic), renames the environment variables the generator derives from the API title and the
+security scheme (`API_KEY`, `ARINA_BASE_URL`, `ARINA_LOG`, `ARINA_CUSTOM_HEADERS`) to the `ARINA_GRID_*`
+family across generated code and docs, and replaces the generator's empty default base URL (emitted when no environment is
 configured) with a "baseURL is required" error so a key can never be sent to a host we do not own. Once a
 production environment is configured in the generator, that step is a no-op.
 
@@ -60,6 +63,4 @@ parse. `tests/smoke-test.ts` is the generator's live reachability check; run it 
 
 ## Known follow-ups
 
-- Regenerate with the generator config set to `readEnv: ARINA_GRID_API_KEY` and `defaultEnvPrefix: ARINA_GRID`;
-  the current client reads `API_KEY_AUTH` / `ARINA_BASE_URL`.
 - Confirm the copyright holder in `LICENSE` is the legal entity name.

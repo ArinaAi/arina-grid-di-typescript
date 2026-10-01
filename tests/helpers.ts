@@ -43,7 +43,7 @@ export function makeClient(responder: Responder) {
     return responder(request);
   };
   const client = new ArinaDocumentIntelligenceAPI({
-    apiKeyAuth: API_KEY,
+    apiKey: API_KEY,
     baseURL: BASE_URL,
     fetch: fetchMock,
     maxRetries: 0,

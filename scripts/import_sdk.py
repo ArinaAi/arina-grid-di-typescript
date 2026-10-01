@@ -5,9 +5,11 @@
 
 Generated paths are replaced; ours are untouched; preserved files (package.json, README.md,
 LICENSE, SECURITY.md) are created once, then only diffed. The version in package.json is
-written back into the generated src/version.ts, and the empty default base URL the generator
-emits when no environment is configured is replaced by an error (a client must never fall back
-to a host we do not own). See CONTRIBUTING.md.
+written back into the generated src/version.ts; environment variable names are rewritten to the
+ARINA_GRID_* family (the generator derives them from the API title and the security scheme and
+offers no setting for them); and the empty default base URL the generator emits when no
+environment is configured is replaced by an error (a client must never fall back to a host we do
+not own). See CONTRIBUTING.md.
 """
 
 from __future__ import annotations
@@ -55,6 +57,16 @@ PRESERVED = [
 
 # Keeps the trailing `// x-release-please-version` marker: release-please bumps the line by it.
 VERSION_TS_RE = re.compile(r"^(export const VERSION = ')([^']+)(')", re.MULTILINE)
+# Generated env var name -> ours. Keys are what the generator emits today; a key that is absent
+# is treated as already renamed, so this step retires itself if the generator adopts the names.
+ENV_RENAMES = {
+    "API_KEY": "ARINA_GRID_API_KEY",
+    "ARINA_BASE_URL": "ARINA_GRID_BASE_URL",
+    "ARINA_LOG": "ARINA_GRID_LOG",
+    "ARINA_CUSTOM_HEADERS": "ARINA_GRID_CUSTOM_HEADERS",
+}
+ENV_RENAME_FILES = ["src/**/*.ts", "api.md", "SKILL.md", ".claude/**/*.md", "tests/smoke-test.ts"]
+
 PLACEHOLDER_BASE_URL = re.compile(
     r"(?P<indent>[ \t]+)const defaultBaseURL = '';\n"
 )
@@ -152,6 +164,42 @@ def restore_version() -> str:
     return version
 
 
+def rename_package(source: Path) -> str:
+    """Make generated docs name our package, whatever name the generator was configured with."""
+    theirs = json.loads((source / "package.json").read_text(encoding="utf-8")).get("name")
+    ours = json.loads((REPO / "package.json").read_text(encoding="utf-8")).get("name")
+    if not theirs or theirs == ours:
+        return f"generated docs already name {ours}"
+    count = 0
+    for pattern in ENV_RENAME_FILES:
+        for path in REPO.glob(pattern):
+            if not path.is_file() or "lib" in path.relative_to(REPO).parts:
+                continue
+            text = path.read_text(encoding="utf-8")
+            if theirs in text:
+                count += text.count(theirs)
+                path.write_text(text.replace(theirs, ours), encoding="utf-8")
+    return f"generated docs renamed {theirs} -> {ours} ({count} mentions)"
+
+
+def rename_env_vars() -> str:
+    """Rewrite generated environment variable names to the ARINA_GRID_* family."""
+    counts = dict.fromkeys(ENV_RENAMES, 0)
+    for pattern in ENV_RENAME_FILES:
+        for path in REPO.glob(pattern):
+            if not path.is_file() or "lib" in path.relative_to(REPO).parts:
+                continue
+            text = original = path.read_text(encoding="utf-8")
+            for old, new in ENV_RENAMES.items():
+                text, n = re.subn(rf"(?<![A-Za-z0-9_]){old}(?![A-Za-z0-9_])", new, text)
+                counts[old] += n
+            if text != original:
+                path.write_text(text, encoding="utf-8")
+    if not counts["API_KEY"] and not counts["ARINA_BASE_URL"]:
+        return "generated code already uses ARINA_GRID_* names; nothing renamed"
+    return "env vars renamed: " + ", ".join(f"{k}->{v} ({counts[k]})" for k, v in ENV_RENAMES.items())
+
+
 def patch_placeholder_base_url() -> str:
     """Make baseURL required when the generator emitted its empty default.
 
@@ -200,8 +248,10 @@ def main(argv: list[str]) -> int:
         source = extract(zip_path, Path(tmp))
         replaced = replace_generated(source)
         created, differing = handle_preserved(source)
+        package = rename_package(source)
 
     version = restore_version()
+    renamed = rename_env_vars()
     patched = patch_placeholder_base_url()
 
     print("\nimport complete")
@@ -211,6 +261,8 @@ def main(argv: list[str]) -> int:
     if differing:
         print(f"  review (preserved, zip differs): {', '.join(differing)}")
     print(f"  version restored to {version} in src/version.ts")
+    print(f"  package:  {package}")
+    print(f"  env vars: {renamed}")
     print(f"  base url: {patched}")
     print("\nnext: npm test, then commit as feat:/fix: describing the API change.")
     return 0

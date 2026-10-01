@@ -175,28 +175,53 @@ describe('errors', () => {
 });
 
 describe('client construction', () => {
-  it('requires baseURL: no default host, nothing is sent', async () => {
-    const previous = process.env.ARINA_BASE_URL;
-    delete process.env.ARINA_BASE_URL;
+  it('reads the credential from ARINA_GRID_API_KEY and nothing else', () => {
+    const saved = {
+      key: process.env.ARINA_GRID_API_KEY,
+      generic: process.env.API_KEY,
+      base: process.env.ARINA_GRID_BASE_URL,
+    };
+    process.env.ARINA_GRID_BASE_URL = 'https://di.example.test';
+    process.env.API_KEY = 'must-not-be-read';
+    delete process.env.ARINA_GRID_API_KEY;
     try {
-      expect(() => new ArinaDocumentIntelligenceAPI({ apiKeyAuth: 'k' })).toThrow(
+      expect(() => new ArinaDocumentIntelligenceAPI()).toThrow(/ARINA_GRID_API_KEY/);
+      process.env.ARINA_GRID_API_KEY = 'from-env';
+      expect(new ArinaDocumentIntelligenceAPI().apiKey).toBe('from-env');
+    } finally {
+      for (const [k, v] of [
+        ['ARINA_GRID_API_KEY', saved.key],
+        ['API_KEY', saved.generic],
+        ['ARINA_GRID_BASE_URL', saved.base],
+      ] as const) {
+        if (v === undefined) delete process.env[k];
+        else process.env[k] = v;
+      }
+    }
+  });
+
+  it('requires baseURL: no default host, nothing is sent', async () => {
+    const previous = process.env.ARINA_GRID_BASE_URL;
+    delete process.env.ARINA_GRID_BASE_URL;
+    try {
+      expect(() => new ArinaDocumentIntelligenceAPI({ apiKey: 'k' })).toThrow(
         ArinaDocumentIntelligenceAPIError,
       );
-      expect(() => new ArinaDocumentIntelligenceAPI({ apiKeyAuth: 'k' })).toThrow(/baseURL/);
+      expect(() => new ArinaDocumentIntelligenceAPI({ apiKey: 'k' })).toThrow(/baseURL/);
     } finally {
-      if (previous !== undefined) process.env.ARINA_BASE_URL = previous;
+      if (previous !== undefined) process.env.ARINA_GRID_BASE_URL = previous;
     }
   });
 
   it('reads baseURL from the environment', () => {
-    const previous = process.env.ARINA_BASE_URL;
-    process.env.ARINA_BASE_URL = 'https://di.example.test';
+    const previous = process.env.ARINA_GRID_BASE_URL;
+    process.env.ARINA_GRID_BASE_URL = 'https://di.example.test';
     try {
-      const client = new ArinaDocumentIntelligenceAPI({ apiKeyAuth: 'k' });
+      const client = new ArinaDocumentIntelligenceAPI({ apiKey: 'k' });
       expect(client.baseURL.replace(/\/$/, '')).toBe('https://di.example.test');
     } finally {
-      if (previous === undefined) delete process.env.ARINA_BASE_URL;
-      else process.env.ARINA_BASE_URL = previous;
+      if (previous === undefined) delete process.env.ARINA_GRID_BASE_URL;
+      else process.env.ARINA_GRID_BASE_URL = previous;
     }
   });
 });

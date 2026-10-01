@@ -28,7 +28,7 @@ Complete reference of every operation, grouped by resource. See [the README](./R
 import ArinaDocumentIntelligenceAPI from '@arina-ai/arina-grid-di';
 
 const client = new ArinaDocumentIntelligenceAPI({
-  apiKeyAuth: process.env['API_KEY_AUTH'], // defaults to the API_KEY_AUTH env var
+  apiKey: process.env['ARINA_GRID_API_KEY'], // defaults to the ARINA_GRID_API_KEY env var
 });
 ```
 

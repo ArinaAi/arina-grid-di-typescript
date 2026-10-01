@@ -19,13 +19,13 @@ npm install @arina-ai/arina-grid-di
 import ArinaDocumentIntelligenceAPI from '@arina-ai/arina-grid-di';
 
 const client = new ArinaDocumentIntelligenceAPI({
-  apiKeyAuth: process.env['API_KEY_AUTH'], // defaults to the API_KEY_AUTH env var
+  apiKey: process.env['ARINA_GRID_API_KEY'], // defaults to the ARINA_GRID_API_KEY env var
 });
 ```
 
 Provide credentials using the options below. Environment variables are read automatically when the target runtime supports them:
 
-- `apiKeyAuth` (env: `API_KEY_AUTH`) — Credential for the ApiKeyAuth scheme.
+- `apiKey` (env: `ARINA_GRID_API_KEY`) — Credential for the ApiKey scheme.
 
 ## Calling operations
 
@@ -33,7 +33,7 @@ Provide credentials using the options below. Environment variables are read auto
 import ArinaDocumentIntelligenceAPI from '@arina-ai/arina-grid-di';
 
 const client = new ArinaDocumentIntelligenceAPI({
-  apiKeyAuth: process.env['API_KEY_AUTH'], // defaults to the API_KEY_AUTH env var
+  apiKey: process.env['ARINA_GRID_API_KEY'], // defaults to the ARINA_GRID_API_KEY env var
 });
 
 const extractRun = await client.extraction.createExtractRun({

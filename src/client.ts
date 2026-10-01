@@ -70,12 +70,12 @@ export interface ClientOptions {
   /**
    * The API key for header authorization.
    */
-  apiKeyAuth?: string | AuthTokenProvider | undefined;
+  apiKey?: string | AuthTokenProvider | undefined;
 
   /**
    * Override the default base URL for the API, e.g., "https://api.example.com/v2/"
    *
-   * Defaults to process.env["ARINA_BASE_URL"].
+   * Defaults to process.env["ARINA_GRID_BASE_URL"].
    */
   baseURL?: string | null | undefined;
 
@@ -130,7 +130,7 @@ export interface ClientOptions {
   /**
    * Set the log level.
    *
-   * Defaults to process.env["ARINA_LOG"] or 'warn' if it isn't set.
+   * Defaults to process.env["ARINA_GRID_LOG"] or 'warn' if it isn't set.
    */
   logLevel?: LogLevel | undefined;
 
@@ -148,7 +148,7 @@ export type ArinaDocumentIntelligenceAPIOptions = ClientOptions;
  * API Client for interfacing with the ArinaDocumentIntelligenceApi API.
  */
 export class ArinaDocumentIntelligenceAPI {
-  apiKeyAuth: string | AuthTokenProvider;
+  apiKey: string | AuthTokenProvider;
 
   baseURL: string;
   maxRetries: number;
@@ -166,8 +166,8 @@ export class ArinaDocumentIntelligenceAPI {
   /**
    * API Client for interfacing with the ArinaDocumentIntelligenceApi API.
    *
-   * @param {string | AuthTokenProvider | undefined} [opts.apiKeyAuth=process.env["API_KEY_AUTH"] ?? undefined]
-   * @param {string} [opts.baseURL=process.env["ARINA_BASE_URL"] ?? /] - Override the default base URL for the API.
+   * @param {string | AuthTokenProvider | undefined} [opts.apiKey=process.env["ARINA_GRID_API_KEY"] ?? undefined]
+   * @param {string} [opts.baseURL=process.env["ARINA_GRID_BASE_URL"] ?? /] - Override the default base URL for the API.
    * @param {number} [opts.timeout=1 minute] - The maximum amount of time (in milliseconds) the client will wait for a response before timing out.
    * @param {MergedRequestInit} [opts.fetchOptions] - Additional `RequestInit` options to be passed to `fetch` calls.
    * @param {Fetch} [opts.fetch] - Specify a custom `fetch` function implementation.
@@ -176,25 +176,25 @@ export class ArinaDocumentIntelligenceAPI {
    * @param {Record<string, string | undefined>} opts.defaultQuery - Default query parameters to include with every request to the API.
    */
   constructor({
-    baseURL = readEnv('ARINA_BASE_URL'),
-    apiKeyAuth = readEnv('API_KEY_AUTH'),
+    baseURL = readEnv('ARINA_GRID_BASE_URL'),
+    apiKey = readEnv('ARINA_GRID_API_KEY'),
     ...opts
   }: ClientOptions = {}) {
-    if (apiKeyAuth === undefined) {
+    if (apiKey === undefined) {
       throw new Errors.ArinaDocumentIntelligenceAPIError(
-        "The API_KEY_AUTH environment variable is missing or empty; either provide it, or instantiate the ArinaDocumentIntelligenceAPI client with an apiKeyAuth option, like new ArinaDocumentIntelligenceAPI({ apiKeyAuth: 'My API Key Auth' }).",
+        "The ARINA_GRID_API_KEY environment variable is missing or empty; either provide it, or instantiate the ArinaDocumentIntelligenceAPI client with an apiKey option, like new ArinaDocumentIntelligenceAPI({ apiKey: 'My API Key' }).",
       );
     }
 
     const options: ClientOptions = {
-      apiKeyAuth,
+      apiKey,
       ...opts,
       baseURL: baseURL || '',
     };
     const baseURLOverridden = baseURL !== null && baseURL !== undefined && baseURL !== '';
     if (!options.baseURL) {
       throw new Errors.ArinaDocumentIntelligenceAPIError(
-        'The baseURL client option must be set either by passing baseURL to the client or by setting the ARINA_BASE_URL environment variable.',
+        'The baseURL client option must be set either by passing baseURL to the client or by setting the ARINA_GRID_BASE_URL environment variable.',
       );
     }
     const defaultBaseURL = '';
@@ -206,14 +206,14 @@ export class ArinaDocumentIntelligenceAPI {
     this.logLevel = defaultLogLevel;
     this.logLevel =
       parseLogLevel(options.logLevel, 'ClientOptions.logLevel', this) ??
-      parseLogLevel(readEnv('ARINA_LOG'), 'process.env["ARINA_LOG"]', this) ??
+      parseLogLevel(readEnv('ARINA_GRID_LOG'), 'process.env["ARINA_GRID_LOG"]', this) ??
       defaultLogLevel;
     this.fetchOptions = options.fetchOptions;
     this.maxRetries = options.maxRetries ?? 2;
     this.fetch = options.fetch ?? Shims.getDefaultFetch();
     this.#encoder = Opts.FallbackEncoder;
 
-    const customHeadersEnv = readEnv('ARINA_CUSTOM_HEADERS');
+    const customHeadersEnv = readEnv('ARINA_GRID_CUSTOM_HEADERS');
     if (customHeadersEnv) {
       const parsed: Record<string, string> = {};
       for (const line of customHeadersEnv.split('\n')) {
@@ -229,7 +229,7 @@ export class ArinaDocumentIntelligenceAPI {
     this._baseURLOverridden = baseURLOverridden;
     this._defaultBaseURL = defaultBaseURL;
 
-    this.apiKeyAuth = apiKeyAuth;
+    this.apiKey = apiKey;
   }
 
   withOptions(options: Partial<ClientOptions>): this {
@@ -242,7 +242,7 @@ export class ArinaDocumentIntelligenceAPI {
       logLevel: this.logLevel,
       fetch: this.fetch,
       fetchOptions: this.fetchOptions,
-      apiKeyAuth: this.apiKeyAuth,
+      apiKey: this.apiKey,
       ...options,
     });
     return client;
@@ -783,30 +783,30 @@ export class ArinaDocumentIntelligenceAPI {
     throw new Errors.AuthenticationError(
       401,
       undefined,
-      'Could not resolve authentication method. Expected the apiKeyAuth to be set. Or for the "X-API-Key" headers to be explicitly omitted',
+      'Could not resolve authentication method. Expected the apiKey to be set. Or for the "X-API-Key" headers to be explicitly omitted',
       headers,
     );
   }
 
   authHeadersSync(): Record<string, string> {
     const headers: Record<string, string> = {};
-    const apiKeyAuth = this.resolveAuthOptionSync('apiKeyAuth', this.apiKeyAuth);
-    if (apiKeyAuth) headers['X-API-Key'] = apiKeyAuth;
+    const apiKey = this.resolveAuthOptionSync('apiKey', this.apiKey);
+    if (apiKey) headers['X-API-Key'] = apiKey;
     return headers;
   }
 
   webSocketAuthHeaders(): Record<string, string> {
-    const apiKeyAuth = this.resolveAuthOptionSync('apiKeyAuth', this.apiKeyAuth);
-    if (apiKeyAuth) return { 'X-API-Key': apiKeyAuth };
+    const apiKey = this.resolveAuthOptionSync('apiKey', this.apiKey);
+    if (apiKey) return { 'X-API-Key': apiKey };
     return {};
   }
 
   protected async authHeaders(opts: FinalRequestOptions): Promise<NullableHeaders | undefined> {
-    const apiKeyAuth = await this.resolveAuthOption('apiKeyAuth', this.apiKeyAuth);
-    if (apiKeyAuth == null) {
+    const apiKey = await this.resolveAuthOption('apiKey', this.apiKey);
+    if (apiKey == null) {
       return undefined;
     }
-    return buildHeaders([{ 'X-API-Key': apiKeyAuth }]);
+    return buildHeaders([{ 'X-API-Key': apiKey }]);
   }
 
   private async authQueryAsync(): Promise<Record<string, string>> {

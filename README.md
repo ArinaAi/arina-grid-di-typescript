@@ -41,7 +41,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import ArinaDocumentIntelligenceAPI from '@arina-ai/arina-grid-di';
 
 const client = new ArinaDocumentIntelligenceAPI({
-  apiKeyAuth: '<your key>',
+  apiKey: '<your key>',
   baseURL: 'https://<your base url>',
 });
 
@@ -107,11 +107,11 @@ Pass credentials to the generated client constructor. Environment variables are 
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `apiKeyAuth` | `string \| provider` | - | Credential for the ApiKeyAuth scheme. Defaults to API_KEY_AUTH. |
+| `apiKey` | `string \| provider` | - | Credential for the ApiKey scheme. Defaults to `ARINA_GRID_API_KEY`. |
 
 Declared schemes:
 
-- `ApiKeyAuth` API key in header `X-API-Key`
+- `ApiKey` API key in header `X-API-Key`
 
 <br />
 
@@ -156,15 +156,15 @@ const client = new ArinaDocumentIntelligenceAPI({
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `apiKeyAuth` | `string \| AuthTokenProvider` | `process.env["API_KEY_AUTH"]` | Credential for the ApiKeyAuth scheme. |
-| `baseURL` | `string \| null` | `process.env["ARINA_BASE_URL"]` | Override the default API base URL. Pass `null` when selecting a configured environment. |
+| `apiKey` | `string \| AuthTokenProvider` | `process.env["ARINA_GRID_API_KEY"]` | Credential for the ApiKey scheme. |
+| `baseURL` | `string \| null` | `process.env["ARINA_GRID_BASE_URL"]` | Override the default API base URL. Pass `null` when selecting a configured environment. |
 | `timeout` | `number` | `60000` | Maximum time in milliseconds to wait for a response before aborting a request. |
 | `maxRetries` | `number` | `2` | Number of retries for temporary failures. |
 | `defaultHeaders` | `HeadersInit` | - | Headers sent with every request. |
 | `defaultQuery` | `Record<string, string \| undefined>` | - | Query parameters sent with every request. |
 | `fetchOptions` | `RequestInit` | - | Additional fetch options sent with every request. |
 | `fetch` | `Fetch` | - | Custom fetch implementation. |
-| `logLevel` | `"off" \| "error" \| "warn" \| "info" \| "debug" \| null` | `process.env["ARINA_LOG"]` | Controls request and retry debug logging. |
+| `logLevel` | `"off" \| "error" \| "warn" \| "info" \| "debug" \| null` | `process.env["ARINA_GRID_LOG"]` | Controls request and retry debug logging. |
 | `logger` | `Logger \| null` | `console` | Custom logger implementation. |
 
 <br />
