@@ -26,6 +26,8 @@ export type {
   ParseRetrieveRunParams,
   ParseListRunPageParams,
 } from './parse';
+export { Account } from './account';
+export type { Identity, IdentityOrganization, IdentityUser, AccountWhoAmIParams } from './account';
 export { Extractors } from './extractors/extractors';
 export type {
   Extractor,

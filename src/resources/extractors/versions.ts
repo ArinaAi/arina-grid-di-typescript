@@ -12,25 +12,22 @@ export class Versions extends APIResource {
    * Every immutable config snapshot, newest first.
    *
    * @param {string} extractorID
-   * @param {VersionListParams} params - The parameters to send with the request.
+   * @param {VersionListParams} [params] - The parameters to send with the request.
    * @param {RequestOptions} [options] - Options to apply to the request, such as headers and an abort signal.
    * @returns {APIPromise<ExtractorVersionList>} The versions, newest first.
    *
    * @example
    * ```ts
-   * const extractorVersionList = await client.extractors.versions.list('extractorId', {
-   *   organizationId: 'organizationId',
-   * });
+   * const extractorVersions = await client.extractors.versions.list('extractorId');
    * ```
    */
   list(
     extractorID: string,
-    params: VersionListParams,
+    params: VersionListParams | null | undefined = {},
     options?: RequestOptions,
   ): APIPromise<ExtractorVersionList> {
-    const { 'X-Api-Version': xAPIVersion, ...query } = params;
+    const { 'X-Api-Version': xAPIVersion } = params ?? {};
     return this._client.get(__scalarPath`/extractors/${extractorID}/versions`, {
-      query,
       ...options,
       headers: buildHeaders([
         { ...(xAPIVersion !== undefined ? { 'X-Api-Version': xAPIVersion } : {}) },
@@ -51,7 +48,6 @@ export class Versions extends APIResource {
    * ```ts
    * const extractorVersion = await client.extractors.versions.retrieve(1, {
    *   extractor_id: 'extractorId',
-   *   organizationId: 'organizationId',
    * });
    * ```
    */
@@ -60,9 +56,8 @@ export class Versions extends APIResource {
     params: VersionRetrieveParams,
     options?: RequestOptions,
   ): APIPromise<ExtractorVersion> {
-    const { extractor_id, 'X-Api-Version': xAPIVersion, ...query } = params;
+    const { extractor_id, 'X-Api-Version': xAPIVersion } = params;
     return this._client.get(__scalarPath`/extractors/${extractor_id}/versions/${version}`, {
-      query,
       ...options,
       headers: buildHeaders([
         { ...(xAPIVersion !== undefined ? { 'X-Api-Version': xAPIVersion } : {}) },
@@ -113,11 +108,7 @@ export interface ExtractorVersion {
 
 export interface VersionListParams {
   /**
-   * Query param: Tenant that owns the resource.
-   */
-  organizationId: string;
-  /**
-   * Header param: Contract version. Currently only `2026-09-05`. Omit to get the current version. An unsupported value is rejected with 400.
+   * Contract version. Currently only `2026-09-05`. Omit to get the current version. An unsupported value is rejected with 400.
    */
   'X-Api-Version'?: string;
 }
@@ -127,10 +118,6 @@ export interface VersionRetrieveParams {
    * Path param
    */
   extractor_id: string;
-  /**
-   * Query param: Tenant that owns the resource.
-   */
-  organizationId: string;
   /**
    * Header param: Contract version. Currently only `2026-09-05`. Omit to get the current version. An unsupported value is rejected with 400.
    */

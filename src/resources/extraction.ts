@@ -21,7 +21,7 @@ export class Extraction extends APIResource {
    * const extractRun = await client.extraction.createExtractRun({
    *   file: new File(['file'], 'file'),
    *   config:
-   *     '{"organizationId": "org_123", "config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
+   *     '{"config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
    * });
    * ```
    */
@@ -217,6 +217,11 @@ export interface ExtractConfig {
    * @default block
    */
   citationMode?: string;
+  /**
+   * Processing tier. 'standard' is the default; 'premium' uses a larger model for higher field accuracy at higher latency and cost. On a run from a saved extractor, an explicit value overrides the extractor's.
+   * @default standard
+   */
+  tier?: string;
 }
 
 /**

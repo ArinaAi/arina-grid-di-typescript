@@ -21,7 +21,7 @@ export class Parse extends APIResource {
    * ```ts
    * const parseRun = await client.parse.createRun({
    *   file: new File(['file'], 'file'),
-   *   config: '{"organizationId": "org_123", "config": {"includeTextLines": false}}',
+   *   config: '{"config": {"includeTextLines": false}}',
    * });
    * ```
    */

@@ -50,7 +50,7 @@ const cases: {
       const extractRun = await client.extraction.createExtractRun({
         file: new File(['file'], 'file'),
         config:
-          '{"organizationId": "org_123", "config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
+          '{"config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
       });
     },
   },
@@ -65,7 +65,7 @@ const cases: {
         'X-Api-Version': '2026-09-05',
         file: new File(['file'], 'file'),
         config:
-          '{"organizationId": "org_123", "config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
+          '{"config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
       });
     },
   },
@@ -122,7 +122,7 @@ const cases: {
     run: async () => {
       const parseRun = await client.parse.createRun({
         file: new File(['file'], 'file'),
-        config: '{"organizationId": "org_123", "config": {"includeTextLines": false}}',
+        config: '{"config": {"includeTextLines": false}}',
       });
     },
   },
@@ -136,7 +136,7 @@ const cases: {
       const parseRun = await client.parse.createRun({
         'X-Api-Version': '2026-09-05',
         file: new File(['file'], 'file'),
-        config: '{"organizationId": "org_123", "config": {"includeTextLines": false}}',
+        config: '{"config": {"includeTextLines": false}}',
       });
     },
   },
@@ -186,13 +186,34 @@ const cases: {
   },
 
   {
+    operation: 'whoAmI',
+    method: 'GET',
+    path: '/me',
+    label: 'required params',
+    run: async () => {
+      const identity = await client.account.whoAmI();
+    },
+  },
+
+  {
+    operation: 'whoAmI',
+    method: 'GET',
+    path: '/me',
+    label: 'all params',
+    run: async () => {
+      const identity = await client.account.whoAmI({
+        'X-Api-Version': '2026-09-05',
+      });
+    },
+  },
+
+  {
     operation: 'create',
     method: 'POST',
     path: '/extractors',
     label: 'required params',
     run: async () => {
       const extractor = await client.extractors.create({
-        organizationId: 'org_123',
         name: 'Invoice — EU vendors',
         description: null,
         config: {
@@ -212,7 +233,6 @@ const cases: {
     run: async () => {
       const extractor = await client.extractors.create({
         'X-Api-Version': '2026-09-05',
-        organizationId: 'org_123',
         name: 'Invoice — EU vendors',
         description: null,
         config: {
@@ -230,9 +250,7 @@ const cases: {
     path: '/extractors',
     label: 'required params',
     run: async () => {
-      const extractorList = await client.extractors.list({
-        organizationId: 'organizationId',
-      });
+      const extractors = await client.extractors.list();
     },
   },
 
@@ -242,8 +260,7 @@ const cases: {
     path: '/extractors',
     label: 'all params',
     run: async () => {
-      const extractorList = await client.extractors.list({
-        organizationId: 'organizationId',
+      const extractors = await client.extractors.list({
         status: 'ACTIVE',
         'X-Api-Version': '2026-09-05',
       });
@@ -256,9 +273,7 @@ const cases: {
     path: '/extractors/{extractor_id}',
     label: 'required params',
     run: async () => {
-      const extractor = await client.extractors.retrieve('extractorId', {
-        organizationId: 'organizationId',
-      });
+      const extractor = await client.extractors.retrieve('extractorId');
     },
   },
 
@@ -269,7 +284,6 @@ const cases: {
     label: 'all params',
     run: async () => {
       const extractor = await client.extractors.retrieve('extractorId', {
-        organizationId: 'organizationId',
         'X-Api-Version': '2026-09-05',
       });
     },
@@ -282,7 +296,6 @@ const cases: {
     label: 'required params',
     run: async () => {
       const extractor = await client.extractors.update('extractorId', {
-        organizationId: 'x',
         name: null,
         description: null,
         config: null,
@@ -300,7 +313,6 @@ const cases: {
     run: async () => {
       const extractor = await client.extractors.update('extractorId', {
         'X-Api-Version': '2026-09-05',
-        organizationId: 'x',
         name: null,
         description: null,
         config: null,
@@ -317,7 +329,6 @@ const cases: {
     label: 'required params',
     run: async () => {
       const extractor = await client.extractors.delete('extractorId', {
-        organizationId: 'organizationId',
         permanent: false,
       });
     },
@@ -330,7 +341,6 @@ const cases: {
     label: 'all params',
     run: async () => {
       const extractor = await client.extractors.delete('extractorId', {
-        organizationId: 'organizationId',
         permanent: false,
         'X-Api-Version': '2026-09-05',
       });
@@ -343,9 +353,7 @@ const cases: {
     path: '/extractors/{extractor_id}/versions',
     label: 'required params',
     run: async () => {
-      const extractorVersionList = await client.extractors.versions.list('extractorId', {
-        organizationId: 'organizationId',
-      });
+      const extractorVersions = await client.extractors.versions.list('extractorId');
     },
   },
 
@@ -355,8 +363,7 @@ const cases: {
     path: '/extractors/{extractor_id}/versions',
     label: 'all params',
     run: async () => {
-      const extractorVersionList = await client.extractors.versions.list('extractorId', {
-        organizationId: 'organizationId',
+      const extractorVersions = await client.extractors.versions.list('extractorId', {
         'X-Api-Version': '2026-09-05',
       });
     },
@@ -370,7 +377,6 @@ const cases: {
     run: async () => {
       const extractorVersion = await client.extractors.versions.retrieve(1, {
         extractor_id: 'extractorId',
-        organizationId: 'organizationId',
       });
     },
   },
@@ -383,7 +389,6 @@ const cases: {
     run: async () => {
       const extractorVersion = await client.extractors.versions.retrieve(1, {
         extractor_id: 'extractorId',
-        organizationId: 'organizationId',
         'X-Api-Version': '2026-09-05',
       });
     },

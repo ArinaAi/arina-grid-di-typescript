@@ -12,6 +12,8 @@ Complete reference of every operation, grouped by resource. See [the README](./R
   - [Start a parse run](#start-a-parse-run)
   - [Get a parse run](#get-a-parse-run)
   - [Get the parse page image](#get-the-parse-page-image)
+- [`Account`](#account)
+  - [Who am I](#who-am-i)
 - [`Extractors`](#extractors)
   - [Create an extractor](#create-an-extractor)
   - [List extractors](#list-extractors)
@@ -51,7 +53,7 @@ Accept a document and return a run to poll. `config.config` is either an inline 
 const extractRun = await client.extraction.createExtractRun({
   file: new File(['file'], 'file'),
   config:
-    '{"organizationId": "org_123", "config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
+    '{"config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
 });
 ```
 
@@ -98,7 +100,7 @@ Read page 1 into layout blocks, tables (HTML) and markdown — no schema. `202`:
 ```ts
 const parseRun = await client.parse.createRun({
   file: new File(['file'], 'file'),
-  config: '{"organizationId": "org_123", "config": {"includeTextLines": false}}',
+  config: '{"config": {"includeTextLines": false}}',
 });
 ```
 
@@ -127,6 +129,23 @@ Serve the page image the output polygons were measured against.
 const response = await client.parse.listRunPage('runId');
 ```
 
+## `Account`
+
+Who you are. Send `X-API-Key`; the key alone decides which organisation's data is read or written and which route groups (`scopes`) are allowed. Keys are issued and managed in the portal, not through this API.
+
+### Who am I
+
+Resolve the presented API key to its organisation and scopes. Derived entirely from the key; the caller declares nothing.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`AccountWhoAmIParams`](./src/resources/account.ts) |
+| Response | [`Identity`](./src/resources/account.ts) |
+
+```ts
+const identity = await client.account.whoAmI();
+```
+
 ## `Extractors`
 
 A saved, **versioned** extraction configuration for a tenant: the schema, rules and citation settings a run would otherwise carry inline. Save it once, then start runs with `config.extractorId`.
@@ -144,7 +163,6 @@ Save a named, versioned extraction configuration. The schema is validated here, 
 
 ```ts
 const extractor = await client.extractors.create({
-  organizationId: 'org_123',
   name: 'Invoice — EU vendors',
   description: null,
   config: {
@@ -165,9 +183,7 @@ A tenant's extractors, `ACTIVE` by default. `status=ARCHIVED|all` to widen.
 | Response | [`ExtractorList`](./src/resources/extractors/extractors.ts) |
 
 ```ts
-const extractorList = await client.extractors.list({
-  organizationId: 'organizationId',
-});
+const extractors = await client.extractors.list();
 ```
 
 ### Get an extractor
@@ -180,9 +196,7 @@ The current version of one extractor.
 | Response | [`Extractor`](./src/resources/extractors/extractors.ts) |
 
 ```ts
-const extractor = await client.extractors.retrieve('extractorId', {
-  organizationId: 'organizationId',
-});
+const extractor = await client.extractors.retrieve('extractorId');
 ```
 
 ### Update an extractor
@@ -196,7 +210,6 @@ Rename, describe or reconfigure. Only a `config` change bumps the version. Send 
 
 ```ts
 const extractor = await client.extractors.update('extractorId', {
-  organizationId: 'x',
   name: null,
   description: null,
   config: null,
@@ -216,7 +229,6 @@ Archive by default (record and versions kept, new runs refused). `permanent=true
 
 ```ts
 const extractor = await client.extractors.delete('extractorId', {
-  organizationId: 'organizationId',
   permanent: false,
 });
 ```
@@ -237,9 +249,7 @@ Every immutable config snapshot, newest first.
 | Response | [`ExtractorVersionList`](./src/resources/extractors/versions.ts) |
 
 ```ts
-const extractorVersionList = await client.extractors.versions.list('extractorId', {
-  organizationId: 'organizationId',
-});
+const extractorVersions = await client.extractors.versions.list('extractorId');
 ```
 
 #### Get an extractor version
@@ -254,6 +264,5 @@ One config snapshot by number.
 ```ts
 const extractorVersion = await client.extractors.versions.retrieve(1, {
   extractor_id: 'extractorId',
-  organizationId: 'organizationId',
 });
 ```

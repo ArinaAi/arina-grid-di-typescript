@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Scalar. See README.md for details.
 
-export { Extraction, Parse, Extractors } from './resources/index';
+export { Extraction, Parse, Account, Extractors } from './resources/index';
 export type {
   ExtractRun,
   ExtractConfig,
@@ -22,6 +22,10 @@ export type {
   ParseCreateRunParams,
   ParseRetrieveRunParams,
   ParseListRunPageParams,
+  Identity,
+  IdentityOrganization,
+  IdentityUser,
+  AccountWhoAmIParams,
   Extractor,
   ExtractorList,
   ExtractorCreateParams,

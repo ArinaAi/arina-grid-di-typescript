@@ -28,7 +28,6 @@ export class Extractors extends APIResource {
    * @example
    * ```ts
    * const extractor = await client.extractors.create({
-   *   organizationId: 'org_123',
    *   name: 'Invoice — EU vendors',
    *   description: null,
    *   config: {
@@ -54,19 +53,20 @@ export class Extractors extends APIResource {
   /**
    * A tenant's extractors, `ACTIVE` by default. `status=ARCHIVED|all` to widen.
    *
-   * @param {ExtractorListParams} params - The parameters to send with the request.
+   * @param {ExtractorListParams} [params] - The parameters to send with the request.
    * @param {RequestOptions} [options] - Options to apply to the request, such as headers and an abort signal.
    * @returns {APIPromise<ExtractorList>} The list.
    *
    * @example
    * ```ts
-   * const extractorList = await client.extractors.list({
-   *   organizationId: 'organizationId',
-   * });
+   * const extractors = await client.extractors.list();
    * ```
    */
-  list(params: ExtractorListParams, options?: RequestOptions): APIPromise<ExtractorList> {
-    const { 'X-Api-Version': xAPIVersion, ...query } = params;
+  list(
+    params: ExtractorListParams | null | undefined = {},
+    options?: RequestOptions,
+  ): APIPromise<ExtractorList> {
+    const { 'X-Api-Version': xAPIVersion, ...query } = params ?? {};
     return this._client.get('/extractors', {
       query,
       ...options,
@@ -81,25 +81,22 @@ export class Extractors extends APIResource {
    * The current version of one extractor.
    *
    * @param {string} extractorID
-   * @param {ExtractorRetrieveParams} params - The parameters to send with the request.
+   * @param {ExtractorRetrieveParams} [params] - The parameters to send with the request.
    * @param {RequestOptions} [options] - Options to apply to the request, such as headers and an abort signal.
    * @returns {APIPromise<Extractor>} The extractor.
    *
    * @example
    * ```ts
-   * const extractor = await client.extractors.retrieve('extractorId', {
-   *   organizationId: 'organizationId',
-   * });
+   * const extractor = await client.extractors.retrieve('extractorId');
    * ```
    */
   retrieve(
     extractorID: string,
-    params: ExtractorRetrieveParams,
+    params: ExtractorRetrieveParams | null | undefined = {},
     options?: RequestOptions,
   ): APIPromise<Extractor> {
-    const { 'X-Api-Version': xAPIVersion, ...query } = params;
+    const { 'X-Api-Version': xAPIVersion } = params ?? {};
     return this._client.get(__scalarPath`/extractors/${extractorID}`, {
-      query,
       ...options,
       headers: buildHeaders([
         { ...(xAPIVersion !== undefined ? { 'X-Api-Version': xAPIVersion } : {}) },
@@ -119,7 +116,6 @@ export class Extractors extends APIResource {
    * @example
    * ```ts
    * const extractor = await client.extractors.update('extractorId', {
-   *   organizationId: 'x',
    *   name: null,
    *   description: null,
    *   config: null,
@@ -148,26 +144,25 @@ export class Extractors extends APIResource {
    * Archive by default (record and versions kept, new runs refused). `permanent=true` removes the record and every version; runs already made keep their frozen config.
    *
    * @param {string} extractorID
-   * @param {ExtractorDeleteParams} params - The parameters to send with the request.
+   * @param {ExtractorDeleteParams} [params] - The parameters to send with the request.
    * @param {RequestOptions} [options] - Options to apply to the request, such as headers and an abort signal.
    * @returns {APIPromise<ExtractorDeleteResponse>} Archived extractor (default), or `{object, id, deleted: true}` when `permanent=true`.
    *
    * @example
    * ```ts
    * const extractor = await client.extractors.delete('extractorId', {
-   *   organizationId: 'organizationId',
    *   permanent: false,
    * });
    * ```
    */
   delete(
     extractorID: string,
-    params: ExtractorDeleteParams,
+    params: ExtractorDeleteParams | null | undefined = {},
     options?: RequestOptions,
   ): APIPromise<ExtractorDeleteResponse> {
-    const { organizationId, permanent, 'X-Api-Version': xAPIVersion } = params;
+    const { permanent, 'X-Api-Version': xAPIVersion } = params ?? {};
     return this._client.delete(__scalarPath`/extractors/${extractorID}`, {
-      query: { organizationId, permanent },
+      query: { permanent },
       ...options,
       headers: buildHeaders([
         { ...(xAPIVersion !== undefined ? { 'X-Api-Version': xAPIVersion } : {}) },
@@ -250,11 +245,6 @@ export interface ExtractorCreateParams {
   /**
    * Body param
    * @minLength 1
-   */
-  organizationId: string;
-  /**
-   * Body param
-   * @minLength 1
    * @maxLength 120
    */
   name: string;
@@ -282,10 +272,6 @@ export interface ExtractorCreateParams {
 
 export interface ExtractorListParams {
   /**
-   * Query param: Tenant that owns the resource.
-   */
-  organizationId: string;
-  /**
    * Query param
    */
   status?: 'ACTIVE' | 'ARCHIVED' | 'all';
@@ -297,11 +283,7 @@ export interface ExtractorListParams {
 
 export interface ExtractorRetrieveParams {
   /**
-   * Query param: Tenant that owns the resource.
-   */
-  organizationId: string;
-  /**
-   * Header param: Contract version. Currently only `2026-09-05`. Omit to get the current version. An unsupported value is rejected with 400.
+   * Contract version. Currently only `2026-09-05`. Omit to get the current version. An unsupported value is rejected with 400.
    */
   'X-Api-Version'?: string;
 }
@@ -311,11 +293,6 @@ export interface ExtractorUpdateParams {
    * Header param: Contract version. Currently only `2026-09-05`. Omit to get the current version. An unsupported value is rejected with 400.
    */
   'X-Api-Version'?: string;
-  /**
-   * Body param
-   * @minLength 1
-   */
-  organizationId: string;
   /**
    * Body param
    * @default null
@@ -353,10 +330,6 @@ export interface ExtractorUpdateParams {
 }
 
 export interface ExtractorDeleteParams {
-  /**
-   * Query param: Tenant that owns the resource.
-   */
-  organizationId: string;
   /**
    * Query param
    * @default false
