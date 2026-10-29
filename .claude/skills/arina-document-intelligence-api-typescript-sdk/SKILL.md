@@ -39,7 +39,7 @@ const client = new ArinaDocumentIntelligenceAPI({
 const extractRun = await client.extraction.createExtractRun({
   file: new File(['file'], 'file'),
   config:
-    '{"organizationId": "org_123", "config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
+    '{"config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
 });
 
 console.log(extractRun);
@@ -58,7 +58,7 @@ try {
   const extractRun = await client.extraction.createExtractRun({
     file: new File(['file'], 'file'),
     config:
-      '{"organizationId": "org_123", "config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
+      '{"config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
   });
 } catch (err) {
   if (err instanceof APIError) {

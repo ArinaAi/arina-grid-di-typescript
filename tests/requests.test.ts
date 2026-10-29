@@ -1,15 +1,17 @@
 // Wire contract: what the SDK sends must be what the API's routes parse.
-// Key case: `config` is ONE multipart form field holding JSON (the server reads `config: str = Form(...)`).
-import { describe, expect, it } from 'vitest';
+// Key cases: `config` is ONE multipart form field holding JSON (the server reads `config: str = Form(...)`),
+// and the API key is the tenant, so no request names an organisation.
+import { afterEach, describe, expect, it } from 'vitest';
 import ArinaDocumentIntelligenceAPI, {
   ArinaDocumentIntelligenceAPIError,
+  AuthenticationError,
   NotFoundError,
+  PermissionDeniedError,
   UnprocessableEntityError,
 } from '../src/index';
 import { API_KEY, json, makeClient, runPayload } from './helpers';
 
 const EXTRACT_CONFIG = {
-  organizationId: 'org_123',
   config: {
     jsonSchema: { type: 'object', properties: { invoiceTotal: { type: ['number', 'null'] } } },
     citationsEnabled: true,
@@ -17,7 +19,30 @@ const EXTRACT_CONFIG = {
   metadata: null,
 };
 
+const EXTRACTOR = {
+  object: 'extractor',
+  id: 'ext_1',
+  organizationId: 'org_123', // reported by the server; never sent by the client
+  name: 'Invoices',
+  description: null,
+  version: 1,
+  status: 'ACTIVE',
+  config: { citationsEnabled: true, citationMode: 'block' },
+  metadata: null,
+  createdAt: '2026-01-01T00:00:00Z',
+  updatedAt: '2026-01-01T00:00:00Z',
+};
+
+const IDENTITY = {
+  organization: { id: 'org_123', slug: 'acme' },
+  subject: 'key:k_abc',
+  scopes: ['extract', 'parse', 'extractors:read', 'extractors:write'],
+  keyId: 'k_abc',
+  user: null,
+};
+
 const accepted = (kind: 'extract_run' | 'parse_run') => () => json(202, runPayload(kind));
+const ok = (payload: unknown) => () => json(200, payload);
 
 describe('multipart runs', () => {
   it('POST /extract_runs sends config as a single JSON form field next to the file', async () => {
@@ -48,7 +73,7 @@ describe('multipart runs', () => {
     const { client, last } = makeClient(accepted('parse_run'));
     await client.parse.createRun({
       file: new File([new Uint8Array(8)], 'page.png', { type: 'image/png' }),
-      config: JSON.stringify({ organizationId: 'org_123', config: { includeTextLines: true } }),
+      config: JSON.stringify({ config: { includeTextLines: true } }),
     });
     const form = await last().formData();
     expect(new URL(last().url).pathname).toBe('/parse_runs');
@@ -60,21 +85,28 @@ describe('multipart runs', () => {
     const { client, last } = makeClient(accepted('extract_run'));
     await client.extraction.createExtractRun({
       file: new File(['x'], 'x'),
-      config: JSON.stringify({ organizationId: 'o', metadata: null }),
+      config: JSON.stringify({ config: {}, metadata: null }),
     });
     expect(JSON.parse((await last().formData()).get('config') as string).metadata).toBeNull();
+  });
+
+  it('a queued run is accepted as PENDING', async () => {
+    const { client } = makeClient(() => json(202, runPayload('parse_run', { status: 'PENDING' })));
+    const run = await client.parse.createRun({ file: new File(['x'], 'x'), config: '{}' });
+    expect(run.status).toBe('PENDING');
   });
 });
 
 describe('headers', () => {
-  it('sends X-API-Key on every request', async () => {
-    const { client, last } = makeClient(() => json(200, runPayload()));
+  it('sends X-API-Key on every request and nothing else as a credential', async () => {
+    const { client, last } = makeClient(ok(runPayload()));
     await client.extraction.retrieveExtractRun('run_1');
     expect(last().headers.get('x-api-key')).toBe(API_KEY);
+    expect(last().headers.get('authorization')).toBeNull();
   });
 
   it('sends X-Api-Version only when given', async () => {
-    const { client, last } = makeClient(() => json(200, runPayload()));
+    const { client, last } = makeClient(ok(runPayload()));
     await client.extraction.retrieveExtractRun('run_1');
     expect(last().headers.get('x-api-version')).toBeNull();
     // Typed param (the generated signature) and raw request header both work.
@@ -100,62 +132,104 @@ describe('headers', () => {
   });
 });
 
+describe('account', () => {
+  it('whoAmI is a bare GET /me resolved from the key alone', async () => {
+    const { client, last } = makeClient(ok(IDENTITY));
+    const me = await client.account.whoAmI();
+    expect(last().method).toBe('GET');
+    expect(new URL(last().url).pathname).toBe('/me');
+    expect(new URL(last().url).search).toBe('');
+    expect(last().headers.get('x-api-key')).toBe(API_KEY);
+    expect(me.organization).toEqual({ id: 'org_123', slug: 'acme' });
+    expect([me.keyId, me.subject, me.user]).toEqual(['k_abc', 'key:k_abc', null]);
+    expect(me.scopes).toEqual(IDENTITY.scopes);
+  });
+
+  it('withResponse exposes the raw Response next to the parsed identity', async () => {
+    const { client } = makeClient(ok(IDENTITY));
+    const { data, response } = await client.account.whoAmI().withResponse();
+    expect(response.status).toBe(200);
+    expect(data.keyId).toBe('k_abc');
+  });
+});
+
 describe('JSON endpoints', () => {
-  it('POST /extractors sends a camelCase JSON body', async () => {
-    const { client, last } = makeClient(() =>
-      json(201, {
-        object: 'extractor',
-        id: 'ext_1',
-        organizationId: 'org_123',
-        name: 'Invoices',
-        version: 1,
-        status: 'ACTIVE',
-        config: { citationsEnabled: true, citationMode: 'block' },
-        createdAt: 't',
-        updatedAt: 't',
-      }),
-    );
+  it('POST /extractors sends a camelCase JSON body with no organisation', async () => {
+    const { client, last } = makeClient(() => json(201, EXTRACTOR));
     const extractor = await client.extractors.create({
-      organizationId: 'org_123',
       name: 'Invoices',
       config: { jsonSchema: { type: 'object' }, citationsEnabled: true },
     });
     expect(last().headers.get('content-type')).toBe('application/json');
     expect(await last().json()).toEqual({
-      organizationId: 'org_123',
       name: 'Invoices',
       config: { jsonSchema: { type: 'object' }, citationsEnabled: true },
     });
     expect(extractor.version).toBe(1);
+    expect(extractor.organizationId).toBe('org_123'); // the server still reports the key's organisation
   });
 
-  it('GET /extractors/{id} puts organizationId in the query', async () => {
-    const { client, last } = makeClient(() =>
-      json(200, {
-        id: 'ext_1',
-        organizationId: 'org_123',
-        name: 'n',
-        version: 1,
-        config: {},
-        createdAt: 't',
-        updatedAt: 't',
-      }),
-    );
-    await client.extractors.retrieve('ext_1', { organizationId: 'org_123' });
+  it('GET /extractors/{id} sends only the id', async () => {
+    const { client, last } = makeClient(ok(EXTRACTOR));
+    await client.extractors.retrieve('ext_1');
     const url = new URL(last().url);
     expect(url.pathname).toBe('/extractors/ext_1');
-    expect(url.searchParams.get('organizationId')).toBe('org_123');
+    expect(url.search).toBe('');
   });
 
   it('DELETE /extractors/{id}?permanent=true', async () => {
-    const { client, last } = makeClient(() => json(200, { object: 'extractor', id: 'ext_1', deleted: true }));
-    await client.extractors.delete('ext_1', { organizationId: 'org_123', permanent: true });
+    const { client, last } = makeClient(ok({ object: 'extractor', id: 'ext_1', deleted: true }));
+    await client.extractors.delete('ext_1', { permanent: true });
     expect(last().method).toBe('DELETE');
-    expect(new URL(last().url).searchParams.get('permanent')).toBe('true');
+    expect([...new URL(last().url).searchParams.entries()]).toEqual([['permanent', 'true']]);
+  });
+});
+
+describe('the key is the tenant', () => {
+  it('no operation names an organisation in the URL or the body', async () => {
+    const { client, requests } = makeClient((request) =>
+      new URL(request.url).pathname === '/extractors' && request.method === 'GET'
+        ? json(200, { object: 'list', data: [EXTRACTOR] })
+        : json(200, EXTRACTOR),
+    );
+    await client.extractors.create({ name: 'n', config: { jsonSchema: { type: 'object' } } });
+    await client.extractors.update('ext_1', { name: 'renamed', version: 1 });
+    await client.extractors.retrieve('ext_1');
+    await client.extractors.list({ status: 'all' });
+    await client.extractors.versions.list('ext_1');
+    await client.extractors.versions.retrieve(1, { extractor_id: 'ext_1' });
+
+    expect(requests).toHaveLength(6);
+    for (const request of requests) {
+      expect(request.url.toLowerCase()).not.toContain('organization');
+      expect(await request.text()).not.toContain('organization');
+    }
   });
 });
 
 describe('errors', () => {
+  it('401 -> AuthenticationError with the bare body', async () => {
+    const { client } = makeClient(() => json(401, { detail: 'Unauthorized' }));
+    const error = await client.account.whoAmI().catch((e) => e);
+    expect(error).toBeInstanceOf(AuthenticationError);
+    expect(error.status).toBe(401);
+    expect(error.error).toEqual({ detail: 'Unauthorized' });
+  });
+
+  it('403 missing_scope -> PermissionDeniedError naming the scopes', async () => {
+    const detail = {
+      code: 'missing_scope',
+      message: 'your credential lacks a scope this action needs',
+      missing: ['extractors:write'],
+    };
+    const { client } = makeClient(() => json(403, { detail }));
+    const error = await client.extractors.create({ name: 'n', config: {} }).catch((e) => e);
+    expect(error).toBeInstanceOf(PermissionDeniedError);
+    expect(error.status).toBe(403);
+    expect(error.error.detail.code).toBe('missing_scope');
+    expect(error.error.detail.missing).toEqual(['extractors:write']);
+  });
+
   it('404 -> NotFoundError with the JSON body', async () => {
     const { client } = makeClient(() => json(404, { detail: "Run 'x' not found. It may have expired." }));
     const error = await client.extraction.retrieveExtractRun('x').catch((e) => e);
@@ -175,53 +249,42 @@ describe('errors', () => {
 });
 
 describe('client construction', () => {
+  const ENV = ['ARINA_GRID_API_KEY', 'API_KEY', 'ARINA_GRID_BASE_URL', 'ARINA_GRID_CUSTOM_HEADERS'] as const;
+  const saved = Object.fromEntries(ENV.map((k) => [k, process.env[k]]));
+  afterEach(() => {
+    for (const k of ENV) {
+      if (saved[k] === undefined) delete process.env[k];
+      else process.env[k] = saved[k];
+    }
+  });
+
   it('reads the credential from ARINA_GRID_API_KEY and nothing else', () => {
-    const saved = {
-      key: process.env.ARINA_GRID_API_KEY,
-      generic: process.env.API_KEY,
-      base: process.env.ARINA_GRID_BASE_URL,
-    };
     process.env.ARINA_GRID_BASE_URL = 'https://di.example.test';
     process.env.API_KEY = 'must-not-be-read';
     delete process.env.ARINA_GRID_API_KEY;
-    try {
-      expect(() => new ArinaDocumentIntelligenceAPI()).toThrow(/ARINA_GRID_API_KEY/);
-      process.env.ARINA_GRID_API_KEY = 'from-env';
-      expect(new ArinaDocumentIntelligenceAPI().apiKey).toBe('from-env');
-    } finally {
-      for (const [k, v] of [
-        ['ARINA_GRID_API_KEY', saved.key],
-        ['API_KEY', saved.generic],
-        ['ARINA_GRID_BASE_URL', saved.base],
-      ] as const) {
-        if (v === undefined) delete process.env[k];
-        else process.env[k] = v;
-      }
-    }
+    expect(() => new ArinaDocumentIntelligenceAPI()).toThrow(/ARINA_GRID_API_KEY/);
+    process.env.ARINA_GRID_API_KEY = 'from-env';
+    expect(new ArinaDocumentIntelligenceAPI().apiKey).toBe('from-env');
   });
 
-  it('requires baseURL: no default host, nothing is sent', async () => {
-    const previous = process.env.ARINA_GRID_BASE_URL;
+  it('requires baseURL: no default host, nothing is sent', () => {
     delete process.env.ARINA_GRID_BASE_URL;
-    try {
-      expect(() => new ArinaDocumentIntelligenceAPI({ apiKey: 'k' })).toThrow(
-        ArinaDocumentIntelligenceAPIError,
-      );
-      expect(() => new ArinaDocumentIntelligenceAPI({ apiKey: 'k' })).toThrow(/baseURL/);
-    } finally {
-      if (previous !== undefined) process.env.ARINA_GRID_BASE_URL = previous;
-    }
+    expect(() => new ArinaDocumentIntelligenceAPI({ apiKey: 'k' })).toThrow(
+      ArinaDocumentIntelligenceAPIError,
+    );
+    expect(() => new ArinaDocumentIntelligenceAPI({ apiKey: 'k' })).toThrow(/baseURL/);
   });
 
   it('reads baseURL from the environment', () => {
-    const previous = process.env.ARINA_GRID_BASE_URL;
     process.env.ARINA_GRID_BASE_URL = 'https://di.example.test';
-    try {
-      const client = new ArinaDocumentIntelligenceAPI({ apiKey: 'k' });
-      expect(client.baseURL.replace(/\/$/, '')).toBe('https://di.example.test');
-    } finally {
-      if (previous === undefined) delete process.env.ARINA_GRID_BASE_URL;
-      else process.env.ARINA_GRID_BASE_URL = previous;
-    }
+    const client = new ArinaDocumentIntelligenceAPI({ apiKey: 'k' });
+    expect(client.baseURL.replace(/\/$/, '')).toBe('https://di.example.test');
+  });
+
+  it('adds ARINA_GRID_CUSTOM_HEADERS to every request', async () => {
+    process.env.ARINA_GRID_CUSTOM_HEADERS = 'X-Trace: abc\nX-Team: billing';
+    const { client, last } = makeClient(ok(IDENTITY));
+    await client.account.whoAmI();
+    expect([last().headers.get('x-trace'), last().headers.get('x-team')]).toEqual(['abc', 'billing']);
   });
 });

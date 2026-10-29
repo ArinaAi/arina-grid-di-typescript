@@ -53,6 +53,13 @@ import {
   type ParseListRunPageParams,
 } from './resources/parse';
 import {
+  Account,
+  type Identity,
+  type IdentityOrganization,
+  type IdentityUser,
+  type AccountWhoAmIParams,
+} from './resources/account';
+import {
   Extractors,
   type Extractor,
   type ExtractorList,
@@ -866,11 +873,13 @@ export class ArinaDocumentIntelligenceAPI {
 
   extraction: Extraction = new Extraction(this);
   parse: Parse = new Parse(this);
+  account: Account = new Account(this);
   extractors: Extractors = new Extractors(this);
 }
 
 ArinaDocumentIntelligenceAPI.Extraction = Extraction;
 ArinaDocumentIntelligenceAPI.Parse = Parse;
+ArinaDocumentIntelligenceAPI.Account = Account;
 ArinaDocumentIntelligenceAPI.Extractors = Extractors;
 
 export declare namespace ArinaDocumentIntelligenceAPI {
@@ -901,6 +910,14 @@ export declare namespace ArinaDocumentIntelligenceAPI {
     type ParseCreateRunParams as ParseCreateRunParams,
     type ParseRetrieveRunParams as ParseRetrieveRunParams,
     type ParseListRunPageParams as ParseListRunPageParams,
+  };
+
+  export {
+    Account as Account,
+    type Identity as Identity,
+    type IdentityOrganization as IdentityOrganization,
+    type IdentityUser as IdentityUser,
+    type AccountWhoAmIParams as AccountWhoAmIParams,
   };
 
   export {

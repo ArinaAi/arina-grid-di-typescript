@@ -1,7 +1,7 @@
 {
   "name": "ArinaDocumentIntelligenceApi",
   "slug": "arinaDocumentIntelligenceApi",
-  "generatorVersion": "0.36.0",
+  "generatorVersion": "0.36.11",
   "servers": [],
   "environments": {},
   "environmentOrder": [],
@@ -120,6 +120,16 @@
           {
             "name": "citationMode",
             "publicName": "citationMode",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tier",
+            "publicName": "tier",
             "required": false,
             "deprecated": false,
             "type": {
@@ -1234,19 +1244,6 @@
         "kind": "object",
         "properties": [
           {
-            "name": "organizationId",
-            "publicName": "organizationId",
-            "required": true,
-            "deprecated": false,
-            "type": {
-              "kind": "primitive",
-              "type": "string",
-              "validation": {
-                "minLength": 1
-              }
-            }
-          },
-          {
             "name": "name",
             "publicName": "name",
             "required": true,
@@ -1324,19 +1321,6 @@
       "type": {
         "kind": "object",
         "properties": [
-          {
-            "name": "organizationId",
-            "publicName": "organizationId",
-            "required": true,
-            "deprecated": false,
-            "type": {
-              "kind": "primitive",
-              "type": "string",
-              "validation": {
-                "minLength": 1
-              }
-            }
-          },
           {
             "name": "name",
             "publicName": "name",
@@ -1734,6 +1718,161 @@
       }
     },
     {
+      "name": "identity_organization",
+      "source": "identity_organization",
+      "publicAliases": [],
+      "deprecated": false,
+      "type": {
+        "kind": "object",
+        "properties": [
+          {
+            "name": "id",
+            "publicName": "id",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "publicName": "slug",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          }
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "identity_user",
+      "source": "identity_user",
+      "publicAliases": [],
+      "deprecated": false,
+      "type": {
+        "kind": "object",
+        "properties": [
+          {
+            "name": "id",
+            "publicName": "id",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "publicName": "email",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "publicName": "role",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          }
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "identity",
+      "source": "identity",
+      "publicAliases": [],
+      "deprecated": false,
+      "type": {
+        "kind": "object",
+        "properties": [
+          {
+            "name": "organization",
+            "publicName": "organization",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "ref",
+              "name": "identity_organization"
+            }
+          },
+          {
+            "name": "subject",
+            "publicName": "subject",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "scopes",
+            "publicName": "scopes",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "array",
+              "items": {
+                "kind": "primitive",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "keyId",
+            "publicName": "keyId",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "union",
+              "variants": [
+                {
+                  "kind": "primitive",
+                  "type": "string"
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          },
+          {
+            "name": "user",
+            "publicName": "user",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "union",
+              "variants": [
+                {
+                  "kind": "ref",
+                  "name": "identity_user"
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          }
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
       "name": "error",
       "source": "error",
       "publicAliases": [],
@@ -1784,9 +1923,49 @@
                     ],
                     "additionalProperties": false
                   }
+                },
+                {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "name": "code",
+                      "publicName": "code",
+                      "required": true,
+                      "deprecated": false,
+                      "type": {
+                        "kind": "primitive",
+                        "type": "string"
+                      }
+                    },
+                    {
+                      "name": "message",
+                      "publicName": "message",
+                      "required": true,
+                      "deprecated": false,
+                      "type": {
+                        "kind": "primitive",
+                        "type": "string"
+                      }
+                    },
+                    {
+                      "name": "missing",
+                      "publicName": "missing",
+                      "required": false,
+                      "deprecated": false,
+                      "type": {
+                        "kind": "array",
+                        "items": {
+                          "kind": "primitive",
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ],
+                  "additionalProperties": false
                 }
               ],
               "variantNames": [
+                null,
                 null,
                 null
               ]
@@ -1864,12 +2043,14 @@
   "resources": [
     "extraction",
     "parse",
+    "account",
     "extractors",
     "extractors.versions"
   ],
   "publicResources": [
     "extraction",
     "parse",
+    "account",
     "extractors",
     "extractors.versions"
   ],
@@ -1958,6 +2139,8 @@
         "successStatus": "202",
         "errorStatuses": [
           "400",
+          "401",
+          "403",
           "422",
           "503"
         ]
@@ -1965,6 +2148,36 @@
       "errorResponses": [
         {
           "status": "400",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
           "contentType": "application/json",
           "encoding": "json",
           "contents": [
@@ -2078,12 +2291,60 @@
       "result": {
         "successStatus": "200",
         "errorStatuses": [
-          "404"
+          "401",
+          "403",
+          "404",
+          "503"
         ]
       },
       "errorResponses": [
         {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
           "status": "404",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
           "contentType": "application/json",
           "encoding": "json",
           "contents": [
@@ -2167,12 +2428,60 @@
       "result": {
         "successStatus": "200",
         "errorStatuses": [
-          "404"
+          "401",
+          "403",
+          "404",
+          "503"
         ]
       },
       "errorResponses": [
         {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
           "status": "404",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
           "contentType": "application/json",
           "encoding": "json",
           "contents": [
@@ -2274,6 +2583,8 @@
         "successStatus": "202",
         "errorStatuses": [
           "400",
+          "401",
+          "403",
           "422",
           "503"
         ]
@@ -2281,6 +2592,36 @@
       "errorResponses": [
         {
           "status": "400",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
           "contentType": "application/json",
           "encoding": "json",
           "contents": [
@@ -2394,12 +2735,60 @@
       "result": {
         "successStatus": "200",
         "errorStatuses": [
-          "404"
+          "401",
+          "403",
+          "404",
+          "503"
         ]
       },
       "errorResponses": [
         {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
           "status": "404",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
           "contentType": "application/json",
           "encoding": "json",
           "contents": [
@@ -2483,12 +2872,154 @@
       "result": {
         "successStatus": "200",
         "errorStatuses": [
-          "404"
+          "401",
+          "403",
+          "404",
+          "503"
         ]
       },
       "errorResponses": [
         {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
           "status": "404",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        }
+      ],
+      "responseLinks": [],
+      "transport": "http"
+    },
+    {
+      "resource": "account",
+      "publicResource": "account",
+      "operation": "whoAmI",
+      "publicOperation": "whoAmI",
+      "deprecated": false,
+      "method": "GET",
+      "path": "/me",
+      "pathParams": [],
+      "publicPathParams": [],
+      "queryParams": [],
+      "publicQueryParams": [],
+      "headerParams": [
+        "X-Api-Version"
+      ],
+      "publicHeaderParams": [
+        "X-Api-Version"
+      ],
+      "bodyParams": [],
+      "publicBodyParams": [],
+      "bodyParamDetails": [],
+      "pathParamDetails": [],
+      "queryParamDetails": [],
+      "headerParamDetails": [
+        {
+          "name": "X-Api-Version",
+          "required": false,
+          "style": "form",
+          "explode": true
+        }
+      ],
+      "cookieParams": [],
+      "publicCookieParams": [],
+      "cookieParamDetails": [],
+      "paramsModel": {
+        "publicName": "AccountWhoAmIParams"
+      },
+      "response": {
+        "status": "200",
+        "contentType": "application/json",
+        "encoding": "json",
+        "contents": [
+          {
+            "contentType": "application/json",
+            "encoding": "json"
+          }
+        ]
+      },
+      "responseModel": {
+        "name": "identity",
+        "publicAliases": []
+      },
+      "result": {
+        "successStatus": "200",
+        "errorStatuses": [
+          "401",
+          "503"
+        ]
+      },
+      "errorResponses": [
+        {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
           "contentType": "application/json",
           "encoding": "json",
           "contents": [
@@ -2525,24 +3056,18 @@
         "X-Api-Version"
       ],
       "bodyParams": [
-        "organizationId",
         "name",
         "description",
         "config",
         "metadata"
       ],
       "publicBodyParams": [
-        "organizationId",
         "name",
         "description",
         "config",
         "metadata"
       ],
       "bodyParamDetails": [
-        {
-          "name": "organizationId",
-          "required": true
-        },
         {
           "name": "name",
           "required": true
@@ -2607,11 +3132,43 @@
       "result": {
         "successStatus": "201",
         "errorStatuses": [
+          "401",
+          "403",
           "422",
           "503"
         ]
       },
       "errorResponses": [
+        {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
         {
           "status": "422",
           "contentType": "application/json",
@@ -2657,11 +3214,9 @@
       "pathParams": [],
       "publicPathParams": [],
       "queryParams": [
-        "organizationId",
         "status"
       ],
       "publicQueryParams": [
-        "organizationId",
         "status"
       ],
       "headerParams": [
@@ -2675,12 +3230,6 @@
       "bodyParamDetails": [],
       "pathParamDetails": [],
       "queryParamDetails": [
-        {
-          "name": "organizationId",
-          "required": true,
-          "style": "form",
-          "explode": true
-        },
         {
           "name": "status",
           "required": false,
@@ -2720,12 +3269,60 @@
       "result": {
         "successStatus": "200",
         "errorStatuses": [
-          "422"
+          "401",
+          "403",
+          "422",
+          "503"
         ]
       },
       "errorResponses": [
         {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
           "status": "422",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
           "contentType": "application/json",
           "encoding": "json",
           "contents": [
@@ -2757,12 +3354,8 @@
       "publicPathParams": [
         "extractor_id"
       ],
-      "queryParams": [
-        "organizationId"
-      ],
-      "publicQueryParams": [
-        "organizationId"
-      ],
+      "queryParams": [],
+      "publicQueryParams": [],
       "headerParams": [
         "X-Api-Version"
       ],
@@ -2780,14 +3373,7 @@
           "explode": false
         }
       ],
-      "queryParamDetails": [
-        {
-          "name": "organizationId",
-          "required": true,
-          "style": "form",
-          "explode": true
-        }
-      ],
+      "queryParamDetails": [],
       "headerParamDetails": [
         {
           "name": "X-Api-Version",
@@ -2820,12 +3406,60 @@
       "result": {
         "successStatus": "200",
         "errorStatuses": [
-          "404"
+          "401",
+          "403",
+          "404",
+          "503"
         ]
       },
       "errorResponses": [
         {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
           "status": "404",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
           "contentType": "application/json",
           "encoding": "json",
           "contents": [
@@ -2866,7 +3500,6 @@
         "X-Api-Version"
       ],
       "bodyParams": [
-        "organizationId",
         "name",
         "description",
         "config",
@@ -2874,7 +3507,6 @@
         "version"
       ],
       "publicBodyParams": [
-        "organizationId",
         "name",
         "description",
         "config",
@@ -2882,10 +3514,6 @@
         "version"
       ],
       "bodyParamDetails": [
-        {
-          "name": "organizationId",
-          "required": true
-        },
         {
           "name": "name",
           "required": false
@@ -2961,12 +3589,45 @@
       "result": {
         "successStatus": "200",
         "errorStatuses": [
+          "401",
+          "403",
           "404",
           "409",
-          "422"
+          "422",
+          "503"
         ]
       },
       "errorResponses": [
+        {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
         {
           "status": "404",
           "contentType": "application/json",
@@ -3011,6 +3672,21 @@
             "name": "error",
             "publicAliases": []
           }
+        },
+        {
+          "status": "503",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
         }
       ],
       "responseLinks": [],
@@ -3031,11 +3707,9 @@
         "extractor_id"
       ],
       "queryParams": [
-        "organizationId",
         "permanent"
       ],
       "publicQueryParams": [
-        "organizationId",
         "permanent"
       ],
       "headerParams": [
@@ -3056,12 +3730,6 @@
         }
       ],
       "queryParamDetails": [
-        {
-          "name": "organizationId",
-          "required": true,
-          "style": "form",
-          "explode": true
-        },
         {
           "name": "permanent",
           "required": false,
@@ -3098,12 +3766,60 @@
       "result": {
         "successStatus": "200",
         "errorStatuses": [
-          "404"
+          "401",
+          "403",
+          "404",
+          "503"
         ]
       },
       "errorResponses": [
         {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
           "status": "404",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
           "contentType": "application/json",
           "encoding": "json",
           "contents": [
@@ -3135,12 +3851,8 @@
       "publicPathParams": [
         "extractor_id"
       ],
-      "queryParams": [
-        "organizationId"
-      ],
-      "publicQueryParams": [
-        "organizationId"
-      ],
+      "queryParams": [],
+      "publicQueryParams": [],
       "headerParams": [
         "X-Api-Version"
       ],
@@ -3158,14 +3870,7 @@
           "explode": false
         }
       ],
-      "queryParamDetails": [
-        {
-          "name": "organizationId",
-          "required": true,
-          "style": "form",
-          "explode": true
-        }
-      ],
+      "queryParamDetails": [],
       "headerParamDetails": [
         {
           "name": "X-Api-Version",
@@ -3198,12 +3903,60 @@
       "result": {
         "successStatus": "200",
         "errorStatuses": [
-          "404"
+          "401",
+          "403",
+          "404",
+          "503"
         ]
       },
       "errorResponses": [
         {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
           "status": "404",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
           "contentType": "application/json",
           "encoding": "json",
           "contents": [
@@ -3237,12 +3990,8 @@
         "extractor_id",
         "version"
       ],
-      "queryParams": [
-        "organizationId"
-      ],
-      "publicQueryParams": [
-        "organizationId"
-      ],
+      "queryParams": [],
+      "publicQueryParams": [],
       "headerParams": [
         "X-Api-Version"
       ],
@@ -3266,14 +4015,7 @@
           "explode": false
         }
       ],
-      "queryParamDetails": [
-        {
-          "name": "organizationId",
-          "required": true,
-          "style": "form",
-          "explode": true
-        }
-      ],
+      "queryParamDetails": [],
       "headerParamDetails": [
         {
           "name": "X-Api-Version",
@@ -3306,12 +4048,60 @@
       "result": {
         "successStatus": "200",
         "errorStatuses": [
-          "404"
+          "401",
+          "403",
+          "404",
+          "503"
         ]
       },
       "errorResponses": [
         {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
           "status": "404",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
           "contentType": "application/json",
           "encoding": "json",
           "contents": [
