@@ -47,13 +47,13 @@ export class RunFailedError extends Error {
 
 const BACKOFF = 1.5;
 
-function settings(options: WaitOptions) {
+function settings(options: PollOptions) {
   const timeoutMs = options.timeoutMs ?? 120_000;
   const intervalMs = options.intervalMs ?? 1_000;
   if (!(timeoutMs > 0)) throw new RangeError(`timeoutMs must be > 0, got ${timeoutMs}`);
   if (!(intervalMs > 0)) throw new RangeError(`intervalMs must be > 0, got ${intervalMs}`);
   const maxIntervalMs = Math.max(options.maxIntervalMs ?? 5_000, intervalMs);
-  return { timeoutMs, intervalMs, maxIntervalMs, raiseOnFailure: options.raiseOnFailure ?? true };
+  return { timeoutMs, intervalMs, maxIntervalMs };
 }
 
 function sleep(ms: number, signal?: AbortSignal): Promise<void> {
@@ -71,22 +71,45 @@ function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   });
 }
 
-async function poll<R extends Run>(fetchRun: () => Promise<R>, options: WaitOptions): Promise<R> {
-  const { timeoutMs, intervalMs, maxIntervalMs, raiseOnFailure } = settings(options);
+/** Timing and cancellation shared by every waiter; what counts as done is the caller's. */
+export type PollOptions = Omit<WaitOptions, 'raiseOnFailure'>;
+
+/**
+ * Call `fetch` until `check` returns a result; throw `timedOut(last, timeoutMs)` at the deadline.
+ * Shared by the run and batch waiters: they differ only in what counts as done.
+ */
+export async function poll<T>(
+  fetch: () => Promise<T>,
+  options: PollOptions,
+  check: (current: T) => T | undefined,
+  timedOut: (last: T, timeoutMs: number) => Error,
+): Promise<T> {
+  const { timeoutMs, intervalMs, maxIntervalMs } = settings(options);
   options.signal?.throwIfAborted(); // an already-aborted signal must not cost a request
   const deadline = Date.now() + timeoutMs;
   let delay = intervalMs;
   for (;;) {
-    const run = await fetchRun();
-    if (TERMINAL_STATUSES.has(run.status)) {
-      if (run.status !== 'PROCESSED' && raiseOnFailure) throw new RunFailedError(run);
-      return run;
-    }
+    const current = await fetch();
+    const done = check(current);
+    if (done !== undefined) return done;
     const remaining = deadline - Date.now();
-    if (remaining <= 0) throw new RunTimeoutError(run, timeoutMs);
+    if (remaining <= 0) throw timedOut(current, timeoutMs);
     await sleep(Math.min(delay, remaining), options.signal);
     delay = Math.min(delay * BACKOFF, maxIntervalMs);
   }
+}
+
+function runChecks<R extends Run>(raiseOnFailure: boolean) {
+  return (run: R): R | undefined => {
+    if (!TERMINAL_STATUSES.has(run.status)) return undefined;
+    if (run.status !== 'PROCESSED' && raiseOnFailure) throw new RunFailedError(run);
+    return run;
+  };
+}
+
+function pollRun<R extends Run>(fetchRun: () => Promise<R>, options: WaitOptions): Promise<R> {
+  const check = runChecks<R>(options.raiseOnFailure ?? true);
+  return poll(fetchRun, options, check, (run, timeoutMs) => new RunTimeoutError(run, timeoutMs));
 }
 
 /** Poll `GET /extract_runs/{runId}` until terminal and return the run. */
@@ -95,7 +118,7 @@ export function waitForExtractRun(
   runId: string,
   options: WaitOptions = {},
 ): Promise<ExtractRun> {
-  return poll(() => client.extraction.retrieveExtractRun(runId), options);
+  return pollRun(() => client.extraction.retrieveExtractRun(runId), options);
 }
 
 /** Poll `GET /parse_runs/{runId}` until terminal and return the run. */
@@ -104,5 +127,5 @@ export function waitForParseRun(
   runId: string,
   options: WaitOptions = {},
 ): Promise<ParseRun> {
-  return poll(() => client.parse.retrieveRun(runId), options);
+  return pollRun(() => client.parse.retrieveRun(runId), options);
 }

@@ -9,7 +9,8 @@ written back into the generated src/version.ts; environment variable names are r
 ARINA_GRID_* family (the generator derives them from the API title and the security scheme and
 offers no setting for them); and the empty default base URL the generator emits when no
 environment is configured is replaced by an error (a client must never fall back to a host we do
-not own). See CONTRIBUTING.md.
+not own); and multipart file arrays are sent as repeated bare field names (``files``), which is
+what the API reads, instead of the generator's default ``files[]``. See CONTRIBUTING.md.
 """
 
 from __future__ import annotations
@@ -236,6 +237,31 @@ def patch_placeholder_base_url() -> str:
     return "empty default base URL replaced with a required-option error"
 
 
+MULTIPART_ARRAY_LINE = "addFormValue(form, key + '[]', entry)"
+MULTIPART_ARRAY_PATCHED = "addFormValue(form, key, entry) /* repeated bare name: what the API reads */"
+
+
+def patch_multipart_arrays() -> str:
+    """Send multipart file arrays as repeated ``files`` parts, the form the API reads.
+
+    The generated form builder names array entries ``files[]`` (its own TODO says the format
+    is not yet configurable); the API (FastAPI) only reads repeated bare names and answers 422
+    to the bracketed form. If the generator starts emitting bare names or makes the format
+    configurable this finds nothing and does nothing.
+    """
+    uploads = SRC / "internal" / "uploads.ts"
+    text = uploads.read_text(encoding="utf-8")
+    if MULTIPART_ARRAY_PATCHED in text:
+        return "generated form builder already repeats bare array names; no patch needed"
+    count = text.count(MULTIPART_ARRAY_LINE)
+    if count == 0:
+        return "generated form builder does not bracket array names; no patch needed"
+    if count != 1:
+        fail(f"uploads.ts: expected one bracketed array append, found {count}")
+    uploads.write_text(text.replace(MULTIPART_ARRAY_LINE, MULTIPART_ARRAY_PATCHED), encoding="utf-8")
+    return "multipart file arrays sent as repeated bare parts (uploads.ts)"
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 2:
         print(__doc__)
@@ -253,6 +279,7 @@ def main(argv: list[str]) -> int:
     version = restore_version()
     renamed = rename_env_vars()
     patched = patch_placeholder_base_url()
+    arrays = patch_multipart_arrays()
 
     print("\nimport complete")
     print(f"  replaced (generated): {', '.join(replaced)}")
@@ -264,6 +291,7 @@ def main(argv: list[str]) -> int:
     print(f"  package:  {package}")
     print(f"  env vars: {renamed}")
     print(f"  base url: {patched}")
+    print(f"  arrays:   {arrays}")
     print("\nnext: npm test, then commit as feat:/fix: describing the API change.")
     return 0
 

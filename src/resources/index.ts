@@ -3,8 +3,11 @@
 export { Extraction } from './extraction';
 export type {
   ExtractRun,
+  RunBatch,
   ExtractConfig,
   ExtractOutput,
+  BatchCounts,
+  BatchItem,
   FieldMetadata,
   PageImage,
   Citation,
@@ -13,6 +16,8 @@ export type {
   ExtractionCreateExtractRunParams,
   ExtractionRetrieveExtractRunParams,
   ExtractionListExtractRunPageParams,
+  ExtractionCreateExtractBatchParams,
+  ExtractionRetrieveExtractBatchParams,
 } from './extraction';
 export { Parse } from './parse';
 export type {
@@ -25,6 +30,8 @@ export type {
   ParseCreateRunParams,
   ParseRetrieveRunParams,
   ParseListRunPageParams,
+  ParseCreateBatchParams,
+  ParseRetrieveBatchParams,
 } from './parse';
 export { Account } from './account';
 export type { Identity, IdentityOrganization, IdentityUser, AccountWhoAmIParams } from './account';

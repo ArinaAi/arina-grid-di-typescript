@@ -9,7 +9,7 @@ import ArinaDocumentIntelligenceAPI, {
   PermissionDeniedError,
   UnprocessableEntityError,
 } from '../src/index';
-import { API_KEY, json, makeClient, runPayload } from './helpers';
+import { API_KEY, batchPayload, json, makeClient, runPayload } from './helpers';
 
 const EXTRACT_CONFIG = {
   config: {
@@ -94,6 +94,56 @@ describe('multipart runs', () => {
     const { client } = makeClient(() => json(202, runPayload('parse_run', { status: 'PENDING' })));
     const run = await client.parse.createRun({ file: new File(['x'], 'x'), config: '{}' });
     expect(run.status).toBe('PENDING');
+  });
+});
+
+describe('multipart batches', () => {
+  // One request, many documents: the route reads repeated `files` parts and one `config` part.
+  const PARSE_CONFIG = { config: { includeTextLines: true }, metadata: { job: 7 } };
+  it('POST /parse_runs/batches sends one bare `files` part per document next to config', async () => {
+    const { client, last } = makeClient(() => json(202, batchPayload('parse_batch', { status: 'PENDING' })));
+    const batch = await client.parse.createBatch({
+      files: [
+        new File(['%PDF-1.4 a'], 'a.pdf', { type: 'application/pdf' }),
+        new File(['PNG b'], 'b.png', { type: 'image/png' }),
+      ],
+      config: JSON.stringify(PARSE_CONFIG),
+    });
+
+    const request = last();
+    expect(request.method).toBe('POST');
+    expect(new URL(request.url).pathname).toBe('/parse_runs/batches');
+    const form = await request.formData();
+    expect([...form.keys()].sort()).toEqual(['config', 'files', 'files']); // bare `files`, never `files[]`
+    expect(JSON.parse(form.get('config') as string)).toEqual(PARSE_CONFIG);
+    const files = form.getAll('files') as File[];
+    expect(files.map((f) => f.name)).toEqual(['a.pdf', 'b.png']);
+    expect(await files[0]?.text()).toBe('%PDF-1.4 a');
+    expect(batch.id).toBe('pbt_1');
+    expect(batch.status).toBe('PENDING');
+    expect(batch.items?.[0]?.runId).toBe('run_1');
+  });
+
+  it('POST /extract_runs/batches posts to the extract route', async () => {
+    const { client, last } = makeClient(() => json(202, batchPayload('extract_batch')));
+    await client.extraction.createExtractBatch({ files: [new File(['x'], 'x.pdf')], config: '{}' });
+    expect(new URL(last().url).pathname).toBe('/extract_runs/batches');
+    expect([...(await last().formData()).keys()].sort()).toEqual(['config', 'files']);
+  });
+
+  it('GET /extract_runs/batches/{id} is a bare GET', async () => {
+    const { client, last } = makeClient(() => json(200, batchPayload('extract_batch')));
+    const batch = await client.extraction.retrieveExtractBatch('pbt_1');
+    expect(last().method).toBe('GET');
+    expect(new URL(last().url).pathname).toBe('/extract_runs/batches/pbt_1');
+    expect([batch.counts?.processed, batch.counts?.pending]).toEqual([1, 1]);
+  });
+
+  it('a member run carries its batchId; a single run reports null', async () => {
+    const member = makeClient(() => json(200, runPayload('parse_run', { batchId: 'pbt_1' })));
+    expect((await member.client.parse.retrieveRun('run_1')).batchId).toBe('pbt_1');
+    const single = makeClient(() => json(200, runPayload('parse_run', { batchId: null })));
+    expect((await single.client.parse.retrieveRun('run_1')).batchId).toBeNull();
   });
 });
 

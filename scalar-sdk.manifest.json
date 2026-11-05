@@ -1,7 +1,7 @@
 {
   "name": "ArinaDocumentIntelligenceApi",
   "slug": "arinaDocumentIntelligenceApi",
-  "generatorVersion": "0.36.11",
+  "generatorVersion": "0.38.0",
   "servers": [],
   "environments": {},
   "environmentOrder": [],
@@ -544,6 +544,24 @@
           {
             "name": "collection",
             "publicName": "collection",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "union",
+              "variants": [
+                {
+                  "kind": "primitive",
+                  "type": "string"
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          },
+          {
+            "name": "batchId",
+            "publicName": "batchId",
             "required": false,
             "deprecated": false,
             "type": {
@@ -1127,6 +1145,24 @@
             }
           },
           {
+            "name": "batchId",
+            "publicName": "batchId",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "union",
+              "variants": [
+                {
+                  "kind": "primitive",
+                  "type": "string"
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          },
+          {
             "name": "config",
             "publicName": "config",
             "required": false,
@@ -1188,6 +1224,297 @@
                   "kind": "null"
                 }
               ]
+            }
+          },
+          {
+            "name": "metadata",
+            "publicName": "metadata",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "union",
+              "variants": [
+                {
+                  "kind": "object",
+                  "properties": [],
+                  "additionalProperties": {
+                    "kind": "unknown"
+                  }
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          },
+          {
+            "name": "createdAt",
+            "publicName": "createdAt",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "updatedAt",
+            "publicName": "updatedAt",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          }
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "batch_counts",
+      "source": "batch_counts",
+      "publicAliases": [],
+      "deprecated": false,
+      "type": {
+        "kind": "object",
+        "properties": [
+          {
+            "name": "total",
+            "publicName": "total",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pending",
+            "publicName": "pending",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "processing",
+            "publicName": "processing",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "processed",
+            "publicName": "processed",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "failed",
+            "publicName": "failed",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "integer"
+            }
+          }
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "batch_item",
+      "source": "batch_item",
+      "publicAliases": [],
+      "deprecated": false,
+      "type": {
+        "kind": "object",
+        "properties": [
+          {
+            "name": "documentName",
+            "publicName": "documentName",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "runId",
+            "publicName": "runId",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "union",
+              "variants": [
+                {
+                  "kind": "primitive",
+                  "type": "string"
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "publicName": "status",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "failureReason",
+            "publicName": "failureReason",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "union",
+              "variants": [
+                {
+                  "kind": "primitive",
+                  "type": "string"
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          },
+          {
+            "name": "failureMessage",
+            "publicName": "failureMessage",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "union",
+              "variants": [
+                {
+                  "kind": "primitive",
+                  "type": "string"
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          }
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "run_batch",
+      "source": "run_batch",
+      "publicAliases": [],
+      "deprecated": false,
+      "type": {
+        "kind": "object",
+        "properties": [
+          {
+            "name": "object",
+            "publicName": "object",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "publicName": "id",
+            "required": true,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "apiVersion",
+            "publicName": "apiVersion",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "publicName": "status",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          {
+            "name": "counts",
+            "publicName": "counts",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "ref",
+              "name": "batch_counts"
+            }
+          },
+          {
+            "name": "items",
+            "publicName": "items",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "array",
+              "items": {
+                "kind": "ref",
+                "name": "batch_item"
+              }
+            }
+          },
+          {
+            "name": "organizationId",
+            "publicName": "organizationId",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "union",
+              "variants": [
+                {
+                  "kind": "primitive",
+                  "type": "string"
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          },
+          {
+            "name": "config",
+            "publicName": "config",
+            "required": false,
+            "deprecated": false,
+            "type": {
+              "kind": "unknown"
             }
           },
           {
@@ -2500,6 +2827,329 @@
       "transport": "http"
     },
     {
+      "resource": "extraction",
+      "publicResource": "extraction",
+      "operation": "createExtractBatch",
+      "publicOperation": "createExtractBatch",
+      "deprecated": false,
+      "method": "POST",
+      "path": "/extract_runs/batches",
+      "pathParams": [],
+      "publicPathParams": [],
+      "queryParams": [],
+      "publicQueryParams": [],
+      "headerParams": [
+        "X-Api-Version"
+      ],
+      "publicHeaderParams": [
+        "X-Api-Version"
+      ],
+      "bodyParams": [
+        "files",
+        "config"
+      ],
+      "publicBodyParams": [
+        "files",
+        "config"
+      ],
+      "bodyParamDetails": [
+        {
+          "name": "files",
+          "required": true
+        },
+        {
+          "name": "config",
+          "required": true
+        }
+      ],
+      "pathParamDetails": [],
+      "queryParamDetails": [],
+      "headerParamDetails": [
+        {
+          "name": "X-Api-Version",
+          "required": false,
+          "style": "form",
+          "explode": true
+        }
+      ],
+      "cookieParams": [],
+      "publicCookieParams": [],
+      "cookieParamDetails": [],
+      "paramsModel": {
+        "publicName": "ExtractionCreateExtractBatchParams"
+      },
+      "requestBody": {
+        "contentType": "multipart/form-data",
+        "encoding": "multipart",
+        "contents": [
+          {
+            "contentType": "multipart/form-data",
+            "encoding": "multipart"
+          }
+        ],
+        "required": true,
+        "publicName": "body",
+        "publicIdentifier": "body"
+      },
+      "response": {
+        "status": "202",
+        "contentType": "application/json",
+        "encoding": "json",
+        "contents": [
+          {
+            "contentType": "application/json",
+            "encoding": "json"
+          }
+        ]
+      },
+      "responseModel": {
+        "name": "run_batch",
+        "publicAliases": []
+      },
+      "result": {
+        "successStatus": "202",
+        "errorStatuses": [
+          "400",
+          "401",
+          "403",
+          "413",
+          "422",
+          "503"
+        ]
+      },
+      "errorResponses": [
+        {
+          "status": "400",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "413",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "422",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        }
+      ],
+      "responseLinks": [],
+      "transport": "http"
+    },
+    {
+      "resource": "extraction",
+      "publicResource": "extraction",
+      "operation": "retrieveExtractBatch",
+      "publicOperation": "retrieveExtractBatch",
+      "deprecated": false,
+      "method": "GET",
+      "path": "/extract_runs/batches/{batch_id}",
+      "pathParams": [
+        "batch_id"
+      ],
+      "publicPathParams": [
+        "batch_id"
+      ],
+      "queryParams": [],
+      "publicQueryParams": [],
+      "headerParams": [
+        "X-Api-Version"
+      ],
+      "publicHeaderParams": [
+        "X-Api-Version"
+      ],
+      "bodyParams": [],
+      "publicBodyParams": [],
+      "bodyParamDetails": [],
+      "pathParamDetails": [
+        {
+          "name": "batch_id",
+          "required": true,
+          "style": "simple",
+          "explode": false
+        }
+      ],
+      "queryParamDetails": [],
+      "headerParamDetails": [
+        {
+          "name": "X-Api-Version",
+          "required": false,
+          "style": "form",
+          "explode": true
+        }
+      ],
+      "cookieParams": [],
+      "publicCookieParams": [],
+      "cookieParamDetails": [],
+      "paramsModel": {
+        "publicName": "ExtractionRetrieveExtractBatchParams"
+      },
+      "response": {
+        "status": "200",
+        "contentType": "application/json",
+        "encoding": "json",
+        "contents": [
+          {
+            "contentType": "application/json",
+            "encoding": "json"
+          }
+        ]
+      },
+      "responseModel": {
+        "name": "run_batch",
+        "publicAliases": []
+      },
+      "result": {
+        "successStatus": "200",
+        "errorStatuses": [
+          "401",
+          "403",
+          "404",
+          "503"
+        ]
+      },
+      "errorResponses": [
+        {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "404",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        }
+      ],
+      "responseLinks": [],
+      "transport": "http"
+    },
+    {
       "resource": "parse",
       "publicResource": "parse",
       "operation": "createRun",
@@ -2867,6 +3517,329 @@
       },
       "responseHeadersModel": {
         "name": "ListRunPageResponseHeaders",
+        "publicAliases": []
+      },
+      "result": {
+        "successStatus": "200",
+        "errorStatuses": [
+          "401",
+          "403",
+          "404",
+          "503"
+        ]
+      },
+      "errorResponses": [
+        {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "404",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        }
+      ],
+      "responseLinks": [],
+      "transport": "http"
+    },
+    {
+      "resource": "parse",
+      "publicResource": "parse",
+      "operation": "createBatch",
+      "publicOperation": "createBatch",
+      "deprecated": false,
+      "method": "POST",
+      "path": "/parse_runs/batches",
+      "pathParams": [],
+      "publicPathParams": [],
+      "queryParams": [],
+      "publicQueryParams": [],
+      "headerParams": [
+        "X-Api-Version"
+      ],
+      "publicHeaderParams": [
+        "X-Api-Version"
+      ],
+      "bodyParams": [
+        "files",
+        "config"
+      ],
+      "publicBodyParams": [
+        "files",
+        "config"
+      ],
+      "bodyParamDetails": [
+        {
+          "name": "files",
+          "required": true
+        },
+        {
+          "name": "config",
+          "required": true
+        }
+      ],
+      "pathParamDetails": [],
+      "queryParamDetails": [],
+      "headerParamDetails": [
+        {
+          "name": "X-Api-Version",
+          "required": false,
+          "style": "form",
+          "explode": true
+        }
+      ],
+      "cookieParams": [],
+      "publicCookieParams": [],
+      "cookieParamDetails": [],
+      "paramsModel": {
+        "publicName": "ParseCreateBatchParams"
+      },
+      "requestBody": {
+        "contentType": "multipart/form-data",
+        "encoding": "multipart",
+        "contents": [
+          {
+            "contentType": "multipart/form-data",
+            "encoding": "multipart"
+          }
+        ],
+        "required": true,
+        "publicName": "body",
+        "publicIdentifier": "body"
+      },
+      "response": {
+        "status": "202",
+        "contentType": "application/json",
+        "encoding": "json",
+        "contents": [
+          {
+            "contentType": "application/json",
+            "encoding": "json"
+          }
+        ]
+      },
+      "responseModel": {
+        "name": "run_batch",
+        "publicAliases": []
+      },
+      "result": {
+        "successStatus": "202",
+        "errorStatuses": [
+          "400",
+          "401",
+          "403",
+          "413",
+          "422",
+          "503"
+        ]
+      },
+      "errorResponses": [
+        {
+          "status": "400",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "401",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "403",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "413",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "422",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        },
+        {
+          "status": "503",
+          "contentType": "application/json",
+          "encoding": "json",
+          "contents": [
+            {
+              "contentType": "application/json",
+              "encoding": "json"
+            }
+          ],
+          "model": {
+            "name": "error",
+            "publicAliases": []
+          }
+        }
+      ],
+      "responseLinks": [],
+      "transport": "http"
+    },
+    {
+      "resource": "parse",
+      "publicResource": "parse",
+      "operation": "retrieveBatch",
+      "publicOperation": "retrieveBatch",
+      "deprecated": false,
+      "method": "GET",
+      "path": "/parse_runs/batches/{batch_id}",
+      "pathParams": [
+        "batch_id"
+      ],
+      "publicPathParams": [
+        "batch_id"
+      ],
+      "queryParams": [],
+      "publicQueryParams": [],
+      "headerParams": [
+        "X-Api-Version"
+      ],
+      "publicHeaderParams": [
+        "X-Api-Version"
+      ],
+      "bodyParams": [],
+      "publicBodyParams": [],
+      "bodyParamDetails": [],
+      "pathParamDetails": [
+        {
+          "name": "batch_id",
+          "required": true,
+          "style": "simple",
+          "explode": false
+        }
+      ],
+      "queryParamDetails": [],
+      "headerParamDetails": [
+        {
+          "name": "X-Api-Version",
+          "required": false,
+          "style": "form",
+          "explode": true
+        }
+      ],
+      "cookieParams": [],
+      "publicCookieParams": [],
+      "cookieParamDetails": [],
+      "paramsModel": {
+        "publicName": "ParseRetrieveBatchParams"
+      },
+      "response": {
+        "status": "200",
+        "contentType": "application/json",
+        "encoding": "json",
+        "contents": [
+          {
+            "contentType": "application/json",
+            "encoding": "json"
+          }
+        ]
+      },
+      "responseModel": {
+        "name": "run_batch",
         "publicAliases": []
       },
       "result": {
