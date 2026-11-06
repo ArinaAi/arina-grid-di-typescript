@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/ArinaAi/arina-grid-di-typescript/compare/v0.2.0...v0.3.0) (2026-11-06)
+
+
+### Features
+
+* batches — submit many documents in one request and wait for the batch ([#8](https://github.com/ArinaAi/arina-grid-di-typescript/issues/8)) ([bc13e9f](https://github.com/ArinaAi/arina-grid-di-typescript/commit/bc13e9f060124dc5c7eaa0d04ad6e566db4a9744))
+
 ## [0.2.0](https://github.com/ArinaAi/arina-grid-di-typescript/compare/v0.1.0...v0.2.0) (2026-10-29)
 
 
