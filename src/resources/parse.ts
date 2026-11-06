@@ -99,6 +99,67 @@ export class Parse extends APIResource {
       __binaryResponse: true,
     });
   }
+
+  /**
+   * Accept up to 100 documents under one `config` and return a batch to poll. Each document becomes an ordinary parse run, listed in `items` with its run id; results are read from the runs. The request is checked whole: one file of the wrong type or size refuses all of it, naming the files. Available where queued execution is enabled.
+   *
+   * @param {ParseCreateBatchParams} params - The parameters to send with the request.
+   * @param {RequestOptions} [options] - Options to apply to the request, such as headers and an abort signal.
+   * @returns {APIPromise<ExtractionAPI.RunBatch>} Batch accepted. Every document the service could take in is now a queued run, named in `items`; one it could not is an item with `runId: null` and `status: FAILED`.
+   *
+   * @example
+   * ```ts
+   * const runBatch = await client.parse.createBatch({
+   *   files: [new File(['file'], 'file')],
+   *   config: '{"config": {"includeTextLines": false}}',
+   * });
+   * ```
+   */
+  createBatch(params: ParseCreateBatchParams, options?: RequestOptions): APIPromise<ExtractionAPI.RunBatch> {
+    const { 'X-Api-Version': xAPIVersion, ...body } = params;
+    return this._client.post(
+      '/parse_runs/batches',
+      multipartFormRequestOptions(
+        {
+          body,
+          ...options,
+          headers: buildHeaders([
+            { ...(xAPIVersion !== undefined ? { 'X-Api-Version': xAPIVersion } : {}) },
+            options?.headers,
+          ]),
+        },
+        this._client,
+      ),
+    );
+  }
+
+  /**
+   * Report a batch's progress: `status`, `counts`, and each document's run and state. Poll this instead of every run; when `status` is `COMPLETED`, read the results from `GET /parse_runs/{id}` for the items you want.
+   *
+   * @param {string} batchID
+   * @param {ParseRetrieveBatchParams} [params] - The parameters to send with the request.
+   * @param {RequestOptions} [options] - Options to apply to the request, such as headers and an abort signal.
+   * @returns {APIPromise<ExtractionAPI.RunBatch>} The batch as it stands now: each item's `status` is its run's, `counts` add them up, `updatedAt` is the latest change among the runs. Not cacheable.
+   *
+   * @example
+   * ```ts
+   * const runBatch = await client.parse.retrieveBatch('batchId');
+   * ```
+   */
+  retrieveBatch(
+    batchID: string,
+    params: ParseRetrieveBatchParams | null | undefined = {},
+    options?: RequestOptions,
+  ): APIPromise<ExtractionAPI.RunBatch> {
+    const { 'X-Api-Version': xAPIVersion } = params ?? {};
+    return this._client.get(__scalarPath`/parse_runs/batches/${batchID}`, {
+      ...options,
+      headers: buildHeaders([
+        { ...(xAPIVersion !== undefined ? { 'X-Api-Version': xAPIVersion } : {}) },
+        options?.headers,
+      ]),
+    });
+  }
 }
 
 /**
@@ -143,6 +204,11 @@ export interface ParseRun {
    * @default null
    */
   collection?: string | null;
+  /**
+   * The batch this run was submitted in, if any ('pbt_…')
+   * @default null
+   */
+  batchId?: string | null;
   /**
    * Options for a parse run. Every option has a default, so ``config`` may be omitted.
    */
@@ -297,6 +363,30 @@ export interface ParseListRunPageParams {
    */
   'X-Api-Version'?: string;
 }
+
+export interface ParseCreateBatchParams {
+  /**
+   * Header param: Contract version. Currently only `2026-09-05`. Omit to get the current version. An unsupported value is rejected with 400.
+   */
+  'X-Api-Version'?: string;
+  /**
+   * Body param: Documents to process, one part per file under this name. PDF, PNG or JPEG; page 1 of each. Up to 100 files, 15 MB each, 90 MB per request.
+   * @minItems 1
+   * @maxItems 100
+   */
+  files: Array<Uploadable>;
+  /**
+   * Body param: Parse configuration: the `ParseRunRequest` object, JSON-encoded into this single form field (e.g. `json.dumps(...)` / `JSON.stringify(...)`). See the `ParseRunRequest` schema for the fields. Applied to every document.
+   */
+  config: string;
+}
+
+export interface ParseRetrieveBatchParams {
+  /**
+   * Contract version. Currently only `2026-09-05`. Omit to get the current version. An unsupported value is rejected with 400.
+   */
+  'X-Api-Version'?: string;
+}
 export declare namespace Parse {
   export {
     type ParseRun as ParseRun,
@@ -308,5 +398,7 @@ export declare namespace Parse {
     type ParseCreateRunParams as ParseCreateRunParams,
     type ParseRetrieveRunParams as ParseRetrieveRunParams,
     type ParseListRunPageParams as ParseListRunPageParams,
+    type ParseCreateBatchParams as ParseCreateBatchParams,
+    type ParseRetrieveBatchParams as ParseRetrieveBatchParams,
   };
 }

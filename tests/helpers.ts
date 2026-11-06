@@ -35,6 +35,30 @@ export function runPayload(kind: 'extract_run' | 'parse_run' = 'extract_run', ov
   };
 }
 
+/** A minimal valid batch body, as the API returns it: two documents, one done, one waiting. */
+export function batchPayload(
+  kind: 'parse_batch' | 'extract_batch' = 'parse_batch',
+  overrides: Record<string, unknown> = {},
+) {
+  return {
+    object: kind,
+    id: 'pbt_1',
+    apiVersion: '2026-09-05',
+    status: 'PROCESSING',
+    counts: { total: 2, pending: 1, processing: 0, processed: 1, failed: 0 },
+    items: [
+      { documentName: 'a.pdf', runId: 'run_1', status: 'PROCESSED', failureReason: null, failureMessage: null },
+      { documentName: 'b.pdf', runId: 'run_2', status: 'PENDING', failureReason: null, failureMessage: null },
+    ],
+    organizationId: 'org_123',
+    config: {},
+    metadata: null,
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
+    ...overrides,
+  };
+}
+
 export function makeClient(responder: Responder) {
   const requests: Request[] = [];
   const fetchMock: typeof fetch = async (input, init) => {

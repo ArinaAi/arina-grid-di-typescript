@@ -12,6 +12,7 @@ The full API of this library can be found in [api.md](./api.md).
 - [Authentication](#authentication)
 - [Usage](#usage)
 - [Waiting for a run](#waiting-for-a-run)
+- [Many documents at once](#many-documents-at-once)
 - [API Reference](./api.md)
 - [Errors](#errors)
 - [Client Options](#client-options)
@@ -141,6 +142,55 @@ await writeFile('page.jpg', Buffer.from(await page.arrayBuffer()));
 `RunFailedError` (the run is on `.run`); pass `raiseOnFailure: false` to get it back instead.
 Exceeding `timeoutMs` throws `RunTimeoutError`. Unknown statuses are treated as still running,
 because status is an open string.
+
+<br />
+
+## Many documents at once
+
+`POST /parse_runs/batches` and `POST /extract_runs/batches` take up to 100 documents under one
+`config` (15 MB each, 90 MB per request) and return a batch to poll instead of a hundred runs.
+Each document still becomes an ordinary run, listed in `batch.items` with its run id, so results
+are read from the runs as above. Batches need queued execution on the server; where it is off the
+endpoint answers 503.
+
+```ts
+import { readdir } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
+import { toFile } from '@arina-ai/arina-grid-di';
+import { submitExtractBatches, waitForExtractBatch } from '@arina-ai/arina-grid-di/lib';
+
+// Any File objects (PDF, PNG, JPEG). In Node, `toFile` turns a stream or buffer into one.
+const names = (await readdir('invoices')).filter((n) => n.endsWith('.pdf'));
+const documents = await Promise.all(names.map((n) => toFile(createReadStream(`invoices/${n}`), n)));
+
+// Checked against the limits before anything is uploaded and split into as many requests as
+// needed; one batch comes back per request.
+const batches = await submitExtractBatches(client, documents, { config: { jsonSchema: schema } });
+
+for (const submitted of batches) {
+  const batch = await waitForExtractBatch(client, submitted.id, {
+    timeoutMs: 1_800_000,
+    onPoll: (b) => console.log(`${b.counts?.processed} of ${b.counts?.total} done`),
+  });
+  for (const item of batch.items ?? []) {
+    if (item.status === 'PROCESSED' && item.runId) {
+      const run = await client.extraction.retrieveExtractRun(item.runId);
+      console.log(item.documentName, run.output?.value);
+    } else {
+      console.log(item.documentName, 'failed:', item.failureReason, item.failureMessage);
+    }
+  }
+}
+```
+
+A batch is `COMPLETED` once every document is `PROCESSED` or `FAILED`; failures are counted in
+`batch.counts.failed` and named on the items, never thrown, so a batch with two failed documents
+is still complete. `waitForExtractBatch` throws `BatchTimeoutError` (the batch is on `.batch`) if
+that takes longer than `timeoutMs`; the runs keep going server-side. `planBatches(documents)` is
+the grouping on its own. The parse twins are `submitParseBatches` and `waitForParseBatch`. To send
+one request yourself, call the generated methods directly: `client.parse.createBatch({ files,
+config })` and `client.parse.retrieveBatch(id)` (`createExtractBatch` / `retrieveExtractBatch`
+for extraction). Each member run also reports its `batchId`.
 
 <br />
 

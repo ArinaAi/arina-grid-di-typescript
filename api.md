@@ -8,10 +8,14 @@ Complete reference of every operation, grouped by resource. See [the README](./R
   - [Start an extraction run](#start-an-extraction-run)
   - [Get an extraction run](#get-an-extraction-run)
   - [Get the extraction page image](#get-the-extraction-page-image)
+  - [Start a batch of extraction runs](#start-a-batch-of-extraction-runs)
+  - [Get an extraction batch](#get-an-extraction-batch)
 - [`Parse`](#parse)
   - [Start a parse run](#start-a-parse-run)
   - [Get a parse run](#get-a-parse-run)
   - [Get the parse page image](#get-the-parse-page-image)
+  - [Start a batch of parse runs](#start-a-batch-of-parse-runs)
+  - [Get a parse batch](#get-a-parse-batch)
 - [`Account`](#account)
   - [Who am I](#who-am-i)
 - [`Extractors`](#extractors)
@@ -82,6 +86,36 @@ Serve the page image a run's citation polygons were measured against.
 const response = await client.extraction.listExtractRunPage('runId');
 ```
 
+### Start a batch of extraction runs
+
+Accept up to 100 documents under one `config` and return a batch to poll. Each document becomes an ordinary extraction run, listed in `items` with its run id; results are read from the runs. The request is checked whole: one file of the wrong type or size refuses all of it, naming the files. Available where queued execution is enabled.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`ExtractionCreateExtractBatchParams`](./src/resources/extraction.ts) |
+| Response | [`RunBatch`](./src/resources/extraction.ts) |
+
+```ts
+const runBatch = await client.extraction.createExtractBatch({
+  files: [new File(['file'], 'file')],
+  config:
+    '{"config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
+});
+```
+
+### Get an extraction batch
+
+Report a batch's progress: `status`, `counts`, and each document's run and state. Poll this instead of every run; when `status` is `COMPLETED`, read the results from `GET /extract_runs/{id}` for the items you want.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`ExtractionRetrieveExtractBatchParams`](./src/resources/extraction.ts) |
+| Response | [`RunBatch`](./src/resources/extraction.ts) |
+
+```ts
+const runBatch = await client.extraction.retrieveExtractBatch('batchId');
+```
+
 ## `Parse`
 
 Read page 1 into its structure with **no schema**: every layout block in reading order (type, text, polygon, detection score), each table as HTML (merged cells preserved), and the whole page as markdown. Optionally every text line with its polygon (`includeTextLines`).
@@ -127,6 +161,33 @@ Serve the page image the output polygons were measured against.
 
 ```ts
 const response = await client.parse.listRunPage('runId');
+```
+
+### Start a batch of parse runs
+
+Accept up to 100 documents under one `config` and return a batch to poll. Each document becomes an ordinary parse run, listed in `items` with its run id; results are read from the runs. The request is checked whole: one file of the wrong type or size refuses all of it, naming the files. Available where queued execution is enabled.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`ParseCreateBatchParams`](./src/resources/parse.ts) |
+
+```ts
+const runBatch = await client.parse.createBatch({
+  files: [new File(['file'], 'file')],
+  config: '{"config": {"includeTextLines": false}}',
+});
+```
+
+### Get a parse batch
+
+Report a batch's progress: `status`, `counts`, and each document's run and state. Poll this instead of every run; when `status` is `COMPLETED`, read the results from `GET /parse_runs/{id}` for the items you want.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`ParseRetrieveBatchParams`](./src/resources/parse.ts) |
+
+```ts
+const runBatch = await client.parse.retrieveBatch('batchId');
 ```
 
 ## `Account`

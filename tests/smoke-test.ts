@@ -115,6 +115,57 @@ const cases: {
   },
 
   {
+    operation: 'createExtractBatch',
+    method: 'POST',
+    path: '/extract_runs/batches',
+    label: 'required params',
+    run: async () => {
+      const runBatch = await client.extraction.createExtractBatch({
+        files: [new File(['file'], 'file')],
+        config:
+          '{"config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
+      });
+    },
+  },
+
+  {
+    operation: 'createExtractBatch',
+    method: 'POST',
+    path: '/extract_runs/batches',
+    label: 'all params',
+    run: async () => {
+      const runBatch = await client.extraction.createExtractBatch({
+        'X-Api-Version': '2026-09-05',
+        files: [new File(['file'], 'file')],
+        config:
+          '{"config": {"jsonSchema": {"type": "object", "properties": {"invoiceNumber": {"type": ["string", "null"]}, "invoiceTotal": {"type": ["number", "null"], "description": "Total amount due"}}}, "citationsEnabled": true}}',
+      });
+    },
+  },
+
+  {
+    operation: 'retrieveExtractBatch',
+    method: 'GET',
+    path: '/extract_runs/batches/{batch_id}',
+    label: 'required params',
+    run: async () => {
+      const runBatch = await client.extraction.retrieveExtractBatch('batchId');
+    },
+  },
+
+  {
+    operation: 'retrieveExtractBatch',
+    method: 'GET',
+    path: '/extract_runs/batches/{batch_id}',
+    label: 'all params',
+    run: async () => {
+      const runBatch = await client.extraction.retrieveExtractBatch('batchId', {
+        'X-Api-Version': '2026-09-05',
+      });
+    },
+  },
+
+  {
     operation: 'createRun',
     method: 'POST',
     path: '/parse_runs',
@@ -180,6 +231,55 @@ const cases: {
     label: 'all params',
     run: async () => {
       const response = await client.parse.listRunPage('runId', {
+        'X-Api-Version': '2026-09-05',
+      });
+    },
+  },
+
+  {
+    operation: 'createBatch',
+    method: 'POST',
+    path: '/parse_runs/batches',
+    label: 'required params',
+    run: async () => {
+      const runBatch = await client.parse.createBatch({
+        files: [new File(['file'], 'file')],
+        config: '{"config": {"includeTextLines": false}}',
+      });
+    },
+  },
+
+  {
+    operation: 'createBatch',
+    method: 'POST',
+    path: '/parse_runs/batches',
+    label: 'all params',
+    run: async () => {
+      const runBatch = await client.parse.createBatch({
+        'X-Api-Version': '2026-09-05',
+        files: [new File(['file'], 'file')],
+        config: '{"config": {"includeTextLines": false}}',
+      });
+    },
+  },
+
+  {
+    operation: 'retrieveBatch',
+    method: 'GET',
+    path: '/parse_runs/batches/{batch_id}',
+    label: 'required params',
+    run: async () => {
+      const runBatch = await client.parse.retrieveBatch('batchId');
+    },
+  },
+
+  {
+    operation: 'retrieveBatch',
+    method: 'GET',
+    path: '/parse_runs/batches/{batch_id}',
+    label: 'all params',
+    run: async () => {
+      const runBatch = await client.parse.retrieveBatch('batchId', {
         'X-Api-Version': '2026-09-05',
       });
     },

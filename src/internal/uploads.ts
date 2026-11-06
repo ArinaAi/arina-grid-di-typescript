@@ -191,7 +191,7 @@ const addFormValue = async (form: FormData, key: string, value: unknown): Promis
       form.append(key, value, name);
     }
   } else if (Array.isArray(value)) {
-    await Promise.all(value.map((entry) => addFormValue(form, key + '[]', entry)));
+    await Promise.all(value.map((entry) => addFormValue(form, key, entry) /* repeated bare name: what the API reads */));
   } else if (typeof value === 'object') {
     await Promise.all(
       Object.entries(value).map(([name, prop]) => addFormValue(form, `${key}[${name}]`, prop)),
